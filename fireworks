@@ -1,0 +1,30 @@
+#!/usr/bin/python3
+
+import configuration
+
+
+
+def getFrontendModule(name):
+    if name == 'qt':
+        from frontend import frontend_qt
+        return frontend_qt
+    raise Exception('Unrecognized frontend name ' + name)
+
+
+def getBackendModule(name):
+    if name == 'lightningd':
+        from backend import backend_lightningd
+        return backend_lightningd
+    raise Exception('Unrecognized backend name ' + name)
+
+
+config = configuration.Configuration()
+
+backendModule  = getBackendModule(config.getValue('backend', 'module'))
+frontendModule = getFrontendModule(config.getValue('frontend', 'module'))
+
+backend  = backendModule.Backend(config)
+frontend = frontendModule.Frontend(config, backend)
+
+frontend.run()
+
