@@ -1,11 +1,17 @@
 import sys
+import os.path
+import configparser
 
 
 
 class Configuration:
     def __init__(self):
-        #For now, configuration is hard-coded.
-        #In the future, load from config file.
+        self.loadDefaults()
+        self.loadFile('~/.fireworks/config')
+        self.readCommandline()
+
+
+    def loadDefaults(self):
         self.sections = \
         {
         'modules':
@@ -18,7 +24,15 @@ class Configuration:
             'lightning-dir': '~/.lightning'
             }
         }
-        self.readCommandline()
+
+
+    def loadFile(self, filename):
+        filename = os.path.expanduser(filename)
+        config = configparser.ConfigParser()
+        config.read(filename)
+        for section in config.sections():
+            for name in config[section]:
+                self.setValue(section, name, config[section][name])
 
 
     def readCommandline(self):
