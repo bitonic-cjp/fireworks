@@ -4,13 +4,10 @@ class Configuration:
         #In the future, load from commandline args and config file.
         self.sections = \
         {
-        'frontend':
+        'modules':
             {
-            'module': 'qt'
-            },
-        'backend':
-            {
-            'module': 'lightningd'
+            'frontend': 'qt',
+            'backend': 'lightningd'
             }
         }
 

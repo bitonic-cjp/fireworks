@@ -20,8 +20,8 @@ def getBackendModule(name):
 
 config = configuration.Configuration()
 
-backendModule  = getBackendModule(config.getValue('backend', 'module'))
-frontendModule = getFrontendModule(config.getValue('frontend', 'module'))
+backendModule  = getBackendModule(config.getValue('modules', 'backend'))
+frontendModule = getFrontendModule(config.getValue('modules', 'frontend'))
 
 backend  = backendModule.Backend(config)
 frontend = frontendModule.Frontend(config, backend)
