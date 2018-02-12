@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import logging
 
 import configuration
 
@@ -19,6 +20,11 @@ def getBackendModule(name):
 
 
 config = configuration.Configuration()
+#TODO: get log level from config:
+logging.basicConfig(
+    format='%(asctime)s %(levelname)s: %(message)s',
+    level=logging.DEBUG
+    )
 
 backendModule  = getBackendModule(config.getValue('modules', 'backend'))
 frontendModule = getFrontendModule(config.getValue('modules', 'frontend'))

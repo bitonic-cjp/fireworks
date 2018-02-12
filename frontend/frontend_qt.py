@@ -1,4 +1,5 @@
 import sys
+import logging
 from PyQt5.QtWidgets import QApplication, QWidget
 
 
@@ -23,11 +24,15 @@ class App(QWidget):
 
 class Frontend:
     def __init__(self, config, backend):
-        print('Qt')
+        logging.info('Using Qt front-end')
         self.app = QApplication(sys.argv)
         self.ex = App(config, backend)
 
 
     def run(self):
+        logging.info('Starting Qt front-end')
         sys.exit(self.app.exec_())
 
+
+
+logging.info('Loaded Qt front-end module')
