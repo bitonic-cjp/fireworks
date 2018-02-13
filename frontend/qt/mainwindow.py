@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QAction
 
+from .console import Console
+
 
 
 class MainWindow(QMainWindow):
@@ -8,6 +10,9 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle('Fireworks')
         self.setGeometry(10, 10, 640, 480)
+
+        console = Console(self, backend)
+        self.setCentralWidget(console)
 
         mainMenu = self.menuBar() 
 
