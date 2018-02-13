@@ -114,6 +114,11 @@ class Console(QPlainTextEdit):
         command = self.getCommand()
         self.addToHistory(command)
 
-        self.appendPlainText('Command output\n')
+        try:
+            output = self.backend.runCommand(command)
+        except self.backend.Error as e:
+            output = str(e)
+
+        self.appendPlainText(output)
         self.newPrompt()
 

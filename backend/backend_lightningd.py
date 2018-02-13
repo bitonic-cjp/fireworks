@@ -6,6 +6,9 @@ from .lightningd.lightning import LightningRpc
 
 
 class Backend:
+    class Error(Exception):
+        pass
+
     def __init__(self, config):
         logging.info('Using Lightningd back-end')
         lightningDir = config.getValue('lightningd', 'lightning-dir')
@@ -13,7 +16,13 @@ class Backend:
         lightningDir = os.path.abspath(lightningDir)
         socketFile = os.path.join(lightningDir, 'lightning-rpc')
         self.rpc = LightningRpc(socketFile)
-        print(self.rpc.dev_blockheight())
+
+
+    def runCommand(self, cmd):
+        try:
+            return str(self.rpc._call(cmd))
+        except ValueError as e:
+            raise Backend.Error(str(e))
 
 
 
