@@ -1,7 +1,7 @@
 import os.path
 import logging
 
-from backend.lightningd.lightning import LightningRpc
+from .lightningd.lightning import LightningRpc
 
 
 

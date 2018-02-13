@@ -2,7 +2,7 @@ import sys
 import logging
 from PyQt5.QtWidgets import QApplication
 
-from frontend.qt.mainwindow import MainWindow
+from .qt.mainwindow import MainWindow
 
 
 
