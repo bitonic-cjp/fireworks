@@ -15,9 +15,28 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QMainWindow, QAction, QMessageBox
+from PyQt5.QtWidgets import QWidget, QMainWindow, QAction, QMessageBox, QVBoxLayout, QTabWidget
 
 from .console import Console
+
+
+
+class TabWidget(QWidget):
+    def __init__(self, parent, tabDefinition):   
+        super(QWidget, self).__init__(parent)
+        layout = QVBoxLayout(self)
+ 
+        # Initialize tab screen
+        tabs = QTabWidget()
+        #tabs.resize(300,200) 
+ 
+        # Add tabs
+        for name, widget in tabDefinition.items():
+            tabs.addTab(widget, name)
+ 
+        # Add tabs to widget        
+        layout.addWidget(tabs)
+        self.setLayout(layout)
 
 
 
@@ -28,8 +47,12 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Fireworks')
         self.setGeometry(10, 10, 640, 480)
 
-        console = Console(self, backend)
-        self.setCentralWidget(console)
+        tabWidget = TabWidget(self,
+            {
+            'Overview': QWidget(),
+            'Console' : Console(None, backend)
+            })
+        self.setCentralWidget(tabWidget)
 
         mainMenu = self.menuBar() 
 
