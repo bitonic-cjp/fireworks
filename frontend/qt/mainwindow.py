@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QMainWindow, QAction
+from PyQt5.QtWidgets import QMainWindow, QAction, QMessageBox
 
 from .console import Console
 
@@ -42,7 +42,31 @@ class MainWindow(QMainWindow):
 
         helpMenu = mainMenu.addMenu('Help')
         aboutButton = QAction('About', self)
+        aboutButton.triggered.connect(self.showAbout)
         helpMenu.addAction(aboutButton)
 
         self.show()
+
+
+    def showAbout(self):
+        QMessageBox.about(self, 'Fireworks', \
+'''
+Firworks
+Copyright (C) 2018 Bitonic B.V.
+
+Firworks is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Firworks is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Firworks. If not, see <http://www.gnu.org/licenses/>.
+
+The source code is available at https://github.com/bitonic-cjp/fireworks
+''')
 
