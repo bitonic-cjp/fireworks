@@ -146,18 +146,21 @@ class Console(QPlainTextEdit):
 
 
     def runCommand(self):
-        command = self.getCommand()
-        self.addToHistory(command)
+        command = self.getCommand().strip()
 
-        try:
-            output = self.backend.runCommand(command)
-        except self.backend.Error as e:
-            output = str(e)
+        if command:
+            self.addToHistory(command)
 
-        output = pprint.pformat(output,
-            indent=2,
-            width=self.getWidthInCharacters())
+            try:
+                output = self.backend.runCommand(command)
+            except self.backend.Error as e:
+                output = str(e)
 
-        self.appendPlainText(output)
+            output = pprint.pformat(output,
+                indent=2,
+                width=self.getWidthInCharacters())
+
+            self.appendPlainText(output)
+
         self.newPrompt()
 
