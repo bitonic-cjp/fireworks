@@ -1,30 +1,8 @@
 import sys
 import logging
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction
+from PyQt5.QtWidgets import QApplication
 
-
-
-class App(QMainWindow):
-    def __init__(self, config, backend):
-        super().__init__()
-
-        self.setWindowTitle('Fireworks')
-        self.setGeometry(10, 10, 640, 480)
-
-        mainMenu = self.menuBar() 
-
-        fileMenu = mainMenu.addMenu('File')
-        exitButton = QAction('Exit', self)
-        exitButton.setShortcut('Ctrl+Q')
-        exitButton.setStatusTip('Exit application')
-        exitButton.triggered.connect(self.close)
-        fileMenu.addAction(exitButton)
-
-        helpMenu = mainMenu.addMenu('Help')
-        aboutButton = QAction('About', self)
-        helpMenu.addAction(aboutButton)
-
-        self.show()
+from frontend.qt.mainwindow import MainWindow
 
 
 
@@ -32,7 +10,7 @@ class Frontend:
     def __init__(self, config, backend):
         logging.info('Using Qt front-end')
         self.app = QApplication(sys.argv)
-        self.ex = App(config, backend)
+        self.ex = MainWindow(config, backend)
 
 
     def run(self):
