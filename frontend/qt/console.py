@@ -141,8 +141,7 @@ class Console(QPlainTextEdit):
         font = self.document().defaultFont()
         charWidth = QtGui.QFontMetrics(font).averageCharWidth()
         pageWidth = self.viewport().width()
-        print('pageWidth = ' + str(pageWidth))
-        return pageWidth / charWidth
+        return max(10, int(pageWidth / charWidth) - 3)
 
 
     def runCommand(self):
