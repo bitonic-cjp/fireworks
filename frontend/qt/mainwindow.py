@@ -31,7 +31,7 @@ class TabWidget(QWidget):
         #tabs.resize(300,200) 
  
         # Add tabs
-        for name, widget in tabDefinition.items():
+        for name, widget in tabDefinition:
             tabs.addTab(widget, name)
  
         # Add tabs to widget        
@@ -48,10 +48,10 @@ class MainWindow(QMainWindow):
         self.setGeometry(10, 10, 640, 480)
 
         tabWidget = TabWidget(self,
-            {
-            'Overview': QWidget(),
-            'Console' : Console(None, backend)
-            })
+            [
+            ('Overview', QWidget()),
+            ('Console' , Console(None, backend))
+            ])
         self.setCentralWidget(tabWidget)
 
         mainMenu = self.menuBar() 
