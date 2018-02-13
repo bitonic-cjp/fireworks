@@ -15,6 +15,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
+import pprint
+
 from PyQt5.QtWidgets import QPlainTextEdit, QAction
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -135,6 +137,14 @@ class Console(QPlainTextEdit):
         super(Console, self).keyPressEvent(event)
 
 
+    def getWidthInCharacters(self):
+        font = self.document().defaultFont()
+        charWidth = QtGui.QFontMetrics(font).averageCharWidth()
+        pageWidth = self.viewport().width()
+        print('pageWidth = ' + str(pageWidth))
+        return pageWidth / charWidth
+
+
     def runCommand(self):
         command = self.getCommand()
         self.addToHistory(command)
@@ -143,6 +153,10 @@ class Console(QPlainTextEdit):
             output = self.backend.runCommand(command)
         except self.backend.Error as e:
             output = str(e)
+
+        output = pprint.pformat(output,
+            indent=2,
+            width=self.getWidthInCharacters())
 
         self.appendPlainText(output)
         self.newPrompt()

@@ -37,7 +37,7 @@ class Backend:
 
     def runCommand(self, cmd):
         try:
-            return str(self.rpc._call(cmd))
+            return self.rpc._call(cmd)
         except ValueError as e:
             raise Backend.Error(str(e))
 
