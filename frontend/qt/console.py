@@ -64,6 +64,12 @@ class Console(QPlainTextEdit):
             self.moveCursor(QtGui.QTextCursor.Right)
 
 
+    def moveCursorToLastLine(self):
+        c = self.textCursor()
+        if c.block() != self.document().lastBlock():
+            self.moveCursor(QtGui.QTextCursor.End)
+
+
     def addToHistory(self, command):
         if command[0:1] == ' ':
             return
@@ -89,6 +95,8 @@ class Console(QPlainTextEdit):
 
 
     def keyPressEvent(self, event):
+        self.moveCursorToLastLine()
+
         if event.key() in (QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return):
             self.runCommand()
             return
