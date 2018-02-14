@@ -23,35 +23,55 @@ from . import updatesignal
 
 
 
+class HLine(QFrame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setFrameShadow(QFrame.Sunken)
+        self.setFrameShape(QFrame.HLine)
+
+
+
 class BalanceFrame(QFrame):
     def __init__(self, parent, title, elements):
         super().__init__(parent)
         self.setFrameShadow(QFrame.Raised)
         self.setFrameShape(QFrame.StyledPanel)
 
-        layout = QGridLayout(self)
+        self.layout = QGridLayout(self)
 
-        boldFont = QtGui.QFont()
-        boldFont.setBold(True)
+        self.boldFont = QtGui.QFont()
+        self.boldFont.setBold(True)
 
         titleLabel = QLabel(self)
         titleLabel.setText(title)
-        titleLabel.setFont(boldFont)
-        layout.addWidget(titleLabel, 0, 0, 1, 2)
+        titleLabel.setFont(self.boldFont)
+        self.layout.addWidget(titleLabel, 0, 0, 1, 2)
 
         self.amountWidgets = []
         for i in range(len(elements)):
-            amountLabel = QLabel(self)
-            amountLabel.setText(elements[i])
-            layout.addWidget(amountLabel, 1+i, 0)
+            if isinstance(elements[i], str):
+                self.addAmountElement(i, elements[i])
+            else:
+                self.addWidgetElement(i, elements[i])
 
-            amountWidget = QLabel(self)
-            amountWidget.setText('0.00000000 000 BTC')
-            amountWidget.setFont(boldFont)
-            layout.addWidget(amountWidget, 1+i, 1, Qt.AlignRight)
-            self.amountWidgets.append(amountWidget)
+        self.setLayout(self.layout)
 
-        self.setLayout(layout)
+
+    def addAmountElement(self, index, label):
+        amountLabel = QLabel(self)
+        amountLabel.setText(label)
+        self.layout.addWidget(amountLabel, 1+index, 0)
+
+        amountWidget = QLabel(self)
+        amountWidget.setText('0.00000000 000 BTC')
+        amountWidget.setFont(self.boldFont)
+        self.layout.addWidget(amountWidget, 1+index, 1, Qt.AlignRight)
+        self.amountWidgets.append(amountWidget)
+
+
+    def addWidgetElement(self, index, widget):
+        widget.setParent(self)
+        self.layout.addWidget(widget, 1+index, 0, 1, 2)
 
 
     def updateAmount(self, index, amount):
@@ -78,6 +98,7 @@ class Overview(QWidget):
             'Inside Lightning:',
             'Outside Lightning (confirmed):',
             'Outside Lightning (unconfirmed):',
+            HLine(None),
             'Total:'
             ])
         layout.addWidget(self.sendFrame, 0, Qt.AlignTop)
@@ -87,6 +108,7 @@ class Overview(QWidget):
             [
             'Incoming:',
             'Outgoing:',
+            HLine(None),
             'Result:'
             ])
         layout.addWidget(self.lockedFrame, 0, Qt.AlignTop)
