@@ -48,10 +48,21 @@ class BalanceFrame(QFrame):
             amountWidget = QLabel(self)
             amountWidget.setText('0.00000000 000 BTC')
             amountWidget.setFont(boldFont)
-            layout.addWidget(amountWidget, 1+i, 1)
+            layout.addWidget(amountWidget, 1+i, 1, Qt.AlignRight)
             self.amountWidgets.append(amountWidget)
 
         self.setLayout(layout)
+
+
+    def updateAmount(self, index, amount):
+        widget = self.amountWidgets[index]
+
+        digits = '%012d' % amount
+        BTC  = digits[:-11]
+        Sat  = digits[-11:-3]
+        mSat = digits[-3:]
+
+        widget.setText('%s.%s %s BTC' % (BTC, Sat, mSat))
 
 
 
@@ -61,7 +72,7 @@ class Overview(QWidget):
         self.backend = backend
         layout = QHBoxLayout(self)
 
-        sendFrame = BalanceFrame(self,
+        self.sendFrame = BalanceFrame(self,
             'Available for sending',
             [
             'Inside Lightning:',
@@ -69,29 +80,32 @@ class Overview(QWidget):
             'Outside Lightning (unconfirmed):',
             'Total:'
             ])
-        layout.addWidget(sendFrame, 0, Qt.AlignTop)
+        layout.addWidget(self.sendFrame, 0, Qt.AlignTop)
 
-        lockedFrame = BalanceFrame(self,
+        self.lockedFrame = BalanceFrame(self,
             'Locked',
             [
             'Incoming:',
             'Outgoing:',
             'Result:'
             ])
-        layout.addWidget(lockedFrame, 0, Qt.AlignTop)
+        layout.addWidget(self.lockedFrame, 0, Qt.AlignTop)
 
-        receiveFrame = BalanceFrame(self,
+        self.receiveFrame = BalanceFrame(self,
             'Available for receiving',
             [
             'Inside Lightning:'
             ])
-        layout.addWidget(receiveFrame, 0, Qt.AlignTop)
+        layout.addWidget(self.receiveFrame, 0, Qt.AlignTop)
 
         updatesignal.connect(self.update)
 
         self.setLayout(layout)
 
 
-    def update(self):
-        print('Update event')
+    def update(self, static=[]):
+        if not static:
+            static.append(0)
+        static[0] += 111111111111
+        self.sendFrame.updateAmount(0, static[0])
 
