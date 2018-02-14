@@ -19,6 +19,8 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QGridLayout, QFrame, QLabel
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 
+from . import updatesignal
+
 
 
 class BalanceFrame(QFrame):
@@ -84,5 +86,11 @@ class Overview(QWidget):
             ])
         layout.addWidget(receiveFrame, 0, Qt.AlignTop)
 
+        updatesignal.connect(self.update)
+
         self.setLayout(layout)
+
+
+    def update(self):
+        print('Update event')
 
