@@ -56,22 +56,23 @@ class Backend:
     def getNonChannelFunds(self):
         '''
         Arguments:
-        Returns: list(tuple(str, int, int, bool))
+        Returns: dict(tuple(str,int)->tuple(int, bool))
             The non-channel funds.
-            Each element consists of:
+            Each key consists of:
                 txid
                 output index
+            Each value consists of:
                 value (in mSatoshi)
                 is confirmed?
         Exceptions:
             TBD (e.g. not connected?)
         '''
         outputs = self.rpc.listfunds()['outputs']
-        return \
-        [
-        (x['txid'], x['output'], 1000*x['value'], True) #TODO: real confirmation
-        for x in outputs
-        ]
+        ret = {}
+        for tx in outputs:
+            ret[(tx['txid'], tx['output'])] = \
+                (1000*tx['value'], True) #TODO: real confirmation
+        return ret
 
 
     def getChannelFunds(self):

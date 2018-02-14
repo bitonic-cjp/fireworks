@@ -129,8 +129,8 @@ class Overview(QWidget):
         nonChannelFunds = self.backend.getNonChannelFunds()
         channelFunds = self.backend.getChannelFunds()
 
-        confirmed   = sum(x[2] for x in nonChannelFunds if x[3])
-        unconfirmed = sum(x[2] for x in nonChannelFunds if not x[3])
+        confirmed   = sum(x[0] for x in nonChannelFunds.values() if x[1])
+        unconfirmed = sum(x[0] for x in nonChannelFunds.values() if not x[1])
 
         ours        = sum(x[1] for x in channelFunds.values())
         lockedIn    = sum(x[2] for x in channelFunds.values())
