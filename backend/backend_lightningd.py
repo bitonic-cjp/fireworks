@@ -56,8 +56,9 @@ class Backend:
     def getNonChannelFunds(self):
         '''
         Arguments:
-        Returns: list of tuple of (str, int, int, bool)
-            The non-channel funds. Each element has the following items:
+        Returns: list(tuple(str, int, int, bool))
+            The non-channel funds.
+            Each element consists of:
                 txid
                 output index
                 value (in mSatoshi)
@@ -71,6 +72,37 @@ class Backend:
         (x['txid'], x['output'], 1000*x['value'], True) #TODO: real confirmation
         for x in outputs
         ]
+
+
+    def getChannelFunds(self):
+        '''
+        Arguments:
+        Returns: dict(str->tuple(str,int,int,int,int))
+            The channel funds.
+            Each key consists of:
+                funding txID
+            Each value consists of:
+                peer nodeID
+                our funds (mSatoshi)
+                locked funds, incoming (mSatoshi)
+                locked funds, outgoing (mSatoshi)
+                peer's funds (mSatoshi)
+        Exceptions:
+            TBD (e.g. not connected?)
+        '''
+        channels = self.rpc.listfunds()['channels']
+        ret = {}
+        for c in channels:
+            peerID = c['peer_id']
+            txID = c['funding_txid']
+            ours =  1000*c['channel_sat']       #TODO: actual resolution
+            total = 1000*c['channel_total_sat'] #TODO: actual resolution
+            lockedIn = 0 #TODO
+            lockedOut = 0 #TODO
+            theirs = total - ours - lockedIn - lockedOut
+            ret[txID] = (peerID, ours, lockedIn, lockedOut, theirs)
+        return ret
+
 
 
 logging.info('Loaded Lightningd back-end module')

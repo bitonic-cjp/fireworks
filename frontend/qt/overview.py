@@ -127,11 +127,28 @@ class Overview(QWidget):
 
     def update(self):
         nonChannelFunds = self.backend.getNonChannelFunds()
+        channelFunds = self.backend.getChannelFunds()
+
         confirmed   = sum(x[2] for x in nonChannelFunds if x[3])
         unconfirmed = sum(x[2] for x in nonChannelFunds if not x[3])
-        total = confirmed + unconfirmed
 
+        ours        = sum(x[1] for x in channelFunds.values())
+        lockedIn    = sum(x[2] for x in channelFunds.values())
+        lockedOut   = sum(x[3] for x in channelFunds.values())
+        theirs      = sum(x[4] for x in channelFunds.values())
+
+        total = ours + confirmed + unconfirmed
+
+        lockedResult = lockedIn - lockedOut
+
+        self.sendFrame.updateAmount(0, ours)
         self.sendFrame.updateAmount(1, confirmed)
         self.sendFrame.updateAmount(2, unconfirmed)
         self.sendFrame.updateAmount(3, total)
+
+        self.lockedFrame.updateAmount(0, lockedIn)
+        self.lockedFrame.updateAmount(1, lockedOut)
+        self.lockedFrame.updateAmount(2, lockedResult)
+
+        self.receiveFrame.updateAmount(0, theirs)
 
