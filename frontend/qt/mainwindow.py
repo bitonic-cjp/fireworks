@@ -18,6 +18,7 @@
 from PyQt5.QtWidgets import QWidget, QMainWindow, QAction, QMessageBox, QVBoxLayout, QTabWidget
 
 from .console import Console
+from .overview import Overview
 
 
 
@@ -49,7 +50,7 @@ class MainWindow(QMainWindow):
 
         tabWidget = TabWidget(self,
             [
-            ('Overview', QWidget()),
+            ('Overview', Overview(None, backend)),
             ('Console' , Console(None, backend))
             ])
         self.setCentralWidget(tabWidget)
