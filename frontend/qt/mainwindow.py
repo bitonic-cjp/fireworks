@@ -43,7 +43,6 @@ class TabWidget(QWidget):
 
 
     def onCurrentChanged(self, index):
-        print(index)
         if index < len(self.subWidgets):
             self.subWidgets[index].setFocus()
 
@@ -59,6 +58,9 @@ class MainWindow(QMainWindow):
         tabWidget = TabWidget(self,
             [
             ('Overview', Overview(None, backend)),
+            ('Receive' , QWidget()),
+            ('Send'    , QWidget()),
+            ('Channels', QWidget()),
             ('Console' , Console(None, backend))
             ])
         self.setCentralWidget(tabWidget)
