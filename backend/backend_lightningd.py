@@ -36,11 +36,41 @@ class Backend:
 
 
     def runCommand(self, cmd):
+        '''
+        Arguments:
+            cmd: str
+                command to be executed
+        Returns: Any structure of list, dict, str, int, float
+            The output of the command
+        Exceptions:
+            Backend.Error: the command failed
+            TBD (e.g. not connected?)
+        '''
+
         try:
             return self.rpc._call(cmd)
         except ValueError as e:
             raise Backend.Error(str(e))
 
+
+    def getNonChannelFunds(self):
+        '''
+        Arguments:
+        Returns: list of tuple of (str, int, int, bool)
+            The non-channel funds. Each element has the following items:
+                txid
+                output index
+                value (in mSatoshi)
+                is confirmed?
+        Exceptions:
+            TBD (e.g. not connected?)
+        '''
+        outputs = self.rpc.listfunds()['outputs']
+        return \
+        [
+        (x['txid'], x['output'], 1000*x['value'], True) #TODO: real confirmation
+        for x in outputs
+        ]
 
 
 logging.info('Loaded Lightningd back-end module')

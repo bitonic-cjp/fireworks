@@ -125,9 +125,13 @@ class Overview(QWidget):
         self.setLayout(layout)
 
 
-    def update(self, static=[]):
-        if not static:
-            static.append(0)
-        static[0] += 111111111111
-        self.sendFrame.updateAmount(0, static[0])
+    def update(self):
+        nonChannelFunds = self.backend.getNonChannelFunds()
+        confirmed   = sum(x[2] for x in nonChannelFunds if x[3])
+        unconfirmed = sum(x[2] for x in nonChannelFunds if not x[3])
+        total = confirmed + unconfirmed
+
+        self.sendFrame.updateAmount(1, confirmed)
+        self.sendFrame.updateAmount(2, unconfirmed)
+        self.sendFrame.updateAmount(3, total)
 
