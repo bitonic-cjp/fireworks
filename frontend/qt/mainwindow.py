@@ -26,18 +26,26 @@ class TabWidget(QWidget):
     def __init__(self, parent, tabDefinition):   
         super(QWidget, self).__init__(parent)
         layout = QVBoxLayout(self)
+        self.subWidgets = []
  
         # Initialize tab screen
         tabs = QTabWidget()
-        #tabs.resize(300,200) 
+        tabs.currentChanged.connect(self.onCurrentChanged)
  
         # Add tabs
         for name, widget in tabDefinition:
             tabs.addTab(widget, name)
+            self.subWidgets.append(widget)
  
         # Add tabs to widget        
         layout.addWidget(tabs)
         self.setLayout(layout)
+
+
+    def onCurrentChanged(self, index):
+        print(index)
+        if index < len(self.subWidgets):
+            self.subWidgets[index].setFocus()
 
 
 
