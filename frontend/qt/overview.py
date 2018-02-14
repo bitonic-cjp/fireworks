@@ -74,8 +74,9 @@ class Overview(QWidget):
         lockedFrame = BalanceFrame(self,
             'Locked',
             [
-            'For own transactions:',
-            'For others\' transactions:'
+            'Incoming:',
+            'Outgoing:',
+            'Result:'
             ])
         layout.addWidget(lockedFrame, 0, Qt.AlignTop)
 
