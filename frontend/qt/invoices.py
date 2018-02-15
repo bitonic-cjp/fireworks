@@ -27,7 +27,7 @@ class InvoiceTable(QAbstractTableModel):
     def __init__(self, parent, backend):
         super().__init__(parent)
         self.header = \
-            ['Date', 'Label', 'Amount', 'Status']
+            ['Expiration date', 'Label', 'Amount', 'Status']
         self.dataList = []
 
         self.backend = backend
