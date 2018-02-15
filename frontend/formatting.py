@@ -15,16 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-#Amounts, expressed in mSatoshi
-mSatoshi = 1
-Satoshi  = 1000 * mSatoshi
-uBTC     = 100  * Satoshi
-mBTC     = 1000 * uBTC
-BTC      = 1000 * mBTC
-
-
-
-def format(amount):
+def formatAmount(amount):
     '''
     Arguments:
         amount: int

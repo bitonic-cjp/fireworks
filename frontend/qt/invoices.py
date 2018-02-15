@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QTableView
 from PyQt5.QtCore import Qt, QAbstractTableModel
 
 from . import updatesignal
-from .. import amounts
+from .. import formatting
 
 
 
@@ -61,7 +61,7 @@ class InvoiceTable(QAbstractTableModel):
         invoices = self.backend.getInvoices()
         oldDataList = self.dataList
         newDataList = [
-            [str(x[1]), x[0], amounts.format(x[2]), x[3]]
+            [str(x[1]), x[0], formatting.formatAmount(x[2]), x[3]]
             for x in invoices
             ]
 

@@ -20,7 +20,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 
 from . import updatesignal
-from .. import amounts
+from .. import formatting
 
 
 
@@ -77,7 +77,7 @@ class BalanceFrame(QFrame):
 
     def updateAmount(self, index, amount):
         widget = self.amountWidgets[index]
-        widget.setText(amounts.format(amount))
+        widget.setText(formatting.formatAmount(amount))
 
 
 
