@@ -57,7 +57,6 @@ class InvoiceTable(QAbstractTableModel):
 
 
     def update(self):
-        print('update')
         invoices = self.backend.getInvoices()
         oldDataList = self.dataList
 
