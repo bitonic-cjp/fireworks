@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QTableView
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QTableView, QHeaderView
 from PyQt5.QtCore import Qt, QAbstractTableModel
 
 from . import updatesignal
@@ -89,6 +89,9 @@ class Invoices(QWidget):
         tableView.setModel(self.invoiceTable)
         tableView.setSelectionBehavior(QTableView.SelectRows)
         tableView.setSelectionMode(QTableView.SingleSelection)
+        for i in range(tableView.horizontalHeader().count()):
+            tableView.horizontalHeader().setSectionResizeMode(
+                QHeaderView.ResizeToContents)
         layout.addWidget(tableView, 1)
 
         invoiceView = QWidget(self)
