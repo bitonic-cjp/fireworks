@@ -61,7 +61,7 @@ class InvoiceTable(QAbstractTableModel):
         invoices = self.backend.getInvoices()
         oldDataList = self.dataList
         newDataList = [
-            [str(x[1]), x[0], formatting.formatAmount(x[2]), x[3]]
+            [formatting.formatTimestamp(x[1]), x[0], formatting.formatAmount(x[2]), x[3]]
             for x in invoices
             ]
 

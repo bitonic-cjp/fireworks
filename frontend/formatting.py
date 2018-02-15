@@ -15,6 +15,31 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
+
+
+def formatTimestamp(timestamp):
+    #TODO: make the formatting and time zone configurable
+    #TODO: maybe somehow store historic timezone information?
+    #  e.g. one transaction might be made in Hong Kong, another in New York.
+
+    #Naive datetime objects without timezone info:
+    dt_local = datetime.datetime.fromtimestamp(timestamp, tz=None)
+    dt_utc   = datetime.datetime.utcfromtimestamp(timestamp)
+
+    #Determine UTC offset that was apparently used:
+    #Note: this might be different from the current local UTC offset,
+    #  because of DST changes and other time zone changes.
+    utc_offset = dt_local - dt_utc
+    timezone = datetime.timezone(utc_offset)
+
+    #Aware datetime object with timezone info:
+    dt = datetime.datetime.fromtimestamp(timestamp, timezone)
+
+    return dt.strftime('%c (%Z)')
+
+
 def formatAmount(amount):
     '''
     Arguments:
