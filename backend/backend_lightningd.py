@@ -17,6 +17,7 @@
 
 import os.path
 import logging
+import json
 
 from .lightningd.lightning import LightningRpc
 
@@ -35,11 +36,13 @@ class Backend:
         self.rpc = LightningRpc(socketFile)
 
 
-    def runCommand(self, cmd):
+    def runCommand(self, cmd, *args):
         '''
         Arguments:
             cmd: str
                 command to be executed
+            *args: [str, [...]]
+                command arguments (JSON-encoded)
         Returns: Any structure of list, dict, str, int, float
             The output of the command
         Exceptions:
@@ -47,8 +50,16 @@ class Backend:
             TBD (e.g. not connected?)
         '''
 
+        args = list(args)
+        for i in range(len(args)):
+            try:
+                args[i] = json.loads(args[i])
+            except json.JSONDecodeError:
+                #In case it isn't JSON, keep it as a string
+                pass
+
         try:
-            return self.rpc._call(cmd)
+            return self.rpc._call(cmd, args)
         except ValueError as e:
             raise Backend.Error(str(e))
 

@@ -150,8 +150,11 @@ class Console(QPlainTextEdit):
         if command:
             self.addToHistory(command)
 
+            #TODO: don't split on spaces inside quoted strings
+            command = command.split(' ')
+
             try:
-                output = self.backend.runCommand(command)
+                output = self.backend.runCommand(*command)
             except self.backend.Error as e:
                 output = str(e)
 
