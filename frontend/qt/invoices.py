@@ -60,10 +60,17 @@ class InvoiceTable(QAbstractTableModel):
         print('update')
         invoices = self.backend.getInvoices()
         oldDataList = self.dataList
+
+        #Initially prepend every item with an unformatted timestamp
         newDataList = [
-            [formatting.formatTimestamp(x[1]), x[0], formatting.formatAmount(x[2]), x[3]]
+            [x[1], formatting.formatTimestamp(x[1]), x[0], formatting.formatAmount(x[2]), x[3]]
             for x in invoices
             ]
+        #Then, reverse sort on the unformatted timestamp
+        newDataList.sort(key=lambda x: x[0])
+        newDataList.reverse()
+        #Finally, remove the unformatted timestamp
+        newDataList = [x[1:] for x in newDataList]
 
         if newDataList != oldDataList:
             self.beginResetModel()
