@@ -20,6 +20,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 
 from . import updatesignal
+from .. import amounts
 
 
 
@@ -76,13 +77,7 @@ class BalanceFrame(QFrame):
 
     def updateAmount(self, index, amount):
         widget = self.amountWidgets[index]
-
-        digits = '%012d' % amount
-        BTC  = digits[:-11]
-        Sat  = digits[-11:-3]
-        mSat = digits[-3:]
-
-        widget.setText('%s.%s %s BTC' % (BTC, Sat, mSat))
+        widget.setText(amounts.format(amount))
 
 
 
