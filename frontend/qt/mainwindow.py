@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import QWidget, QMainWindow, QAction, QMessageBox, QVBoxLay
 
 from .console import Console
 from .overview import Overview
+from .invoices import Invoices
 
 
 
@@ -58,7 +59,7 @@ class MainWindow(QMainWindow):
         tabWidget = TabWidget(self,
             [
             ('Overview', Overview(None, backend)),
-            ('Receive' , QWidget()),
+            ('Receive' , Invoices(None, backend)),
             ('Send'    , QWidget()),
             ('Channels', QWidget()),
             ('Console' , Console(None, backend))

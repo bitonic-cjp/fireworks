@@ -105,5 +105,25 @@ class Backend:
         return ret
 
 
+    def getInvoices(self):
+        '''
+        Arguments:
+        Returns: list(tuple(str, int, int, str))
+            The invoices.
+            Each element consists of:
+                label
+                expiration date (UNIX timestamp)
+                amount (mSatoshi)
+                status
+        Exceptions:
+            TBD (e.g. not connected?)
+        '''
+        invoices = self.rpc.listinvoices()['invoices']
+        return \
+        [
+        (x['label'], x['expires_at'], x['msatoshi'], x['status'])
+        for x in invoices
+        ]
+
 
 logging.info('Loaded Lightningd back-end module')
