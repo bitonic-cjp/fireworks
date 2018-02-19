@@ -15,6 +15,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
+import copy
+
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QGridLayout, QLabel, QTableView, QHeaderView
 from PyQt5.QtCore import Qt, QAbstractTableModel
 
@@ -50,22 +52,27 @@ class InvoiceTable(QAbstractTableModel):
             return None
         elif role != Qt.DisplayRole:
             return None
-        return self.dataList[index.row()][index.column()]
+
+        invoice = self.dataList[index.row()]
+        col = index.column()
+        if col == 0:
+            return formatting.formatTimestamp(invoice.expirationTime)
+        elif col == 1:
+            return invoice.label
+        elif col == 2:
+            return formatting.formatAmount(invoice.amount)
+        elif col == 3:
+            return invoice.status
+
+        return None
 
 
     def update(self, invoices):
         oldDataList = self.dataList
 
-        #Initially prepend every item with an unformatted timestamp
-        newDataList = [
-            [x[1], formatting.formatTimestamp(x[1]), x[0], formatting.formatAmount(x[2]), x[3]]
-            for x in invoices
-            ]
-        #Then, reverse sort on the unformatted timestamp
-        newDataList.sort(key=lambda x: x[0])
+        newDataList = copy.deepcopy(invoices)
+        newDataList.sort(key=lambda x: x.expirationTime)
         newDataList.reverse()
-        #Finally, remove the unformatted timestamp
-        newDataList = [x[1:] for x in newDataList]
 
         if newDataList != oldDataList:
             self.beginResetModel()

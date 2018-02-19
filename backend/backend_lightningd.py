@@ -23,6 +23,32 @@ from .lightningd.lightning import LightningRpc
 
 
 
+class Invoice:
+    '''
+    amount: int
+        mSatoshi
+    label: str
+    expirationTime: int
+        UNIX timestamp
+    status: str
+    '''
+
+    def __init__(self, amount, label, expirationTime, status):
+        self.amount = amount
+        self.label = label
+        self.expirationTime = expirationTime
+        self.status = status
+
+
+    def __eq__(self, invoice):
+        return \
+            self.amount == invoice.amount and \
+            self.label == invoice.label and \
+            self.expirationTime == invoice.expirationTime and \
+            self.status == invoice.status
+
+
+
 class Backend:
     class CommandFailed(Exception):
         pass
@@ -129,20 +155,20 @@ class Backend:
     def getInvoices(self):
         '''
         Arguments:
-        Returns: list(tuple(str, int, int, str))
+        Returns: list(Invoice)
             The invoices.
-            Each element consists of:
-                label
-                expiration date (UNIX timestamp)
-                amount (mSatoshi)
-                status
         Exceptions:
             TBD (e.g. not connected?)
         '''
         invoices = self.rpc.listinvoices()['invoices']
         return \
         [
-        (x['label'], x['expires_at'], x['msatoshi'], x['status'])
+        Invoice(
+            label=x['label'],
+            expirationTime=x['expires_at'],
+            amount=x['msatoshi'],
+            status=x['status']
+            )
         for x in invoices
         ]
 
