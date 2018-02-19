@@ -97,9 +97,15 @@ class Invoices(QWidget):
         tableView.setModel(self.invoiceTable)
         tableView.setSelectionBehavior(QTableView.SelectRows)
         tableView.setSelectionMode(QTableView.SingleSelection)
-        for i in range(tableView.horizontalHeader().count()):
-            tableView.horizontalHeader().setSectionResizeMode(
-                QHeaderView.ResizeToContents)
+
+        #Make all colums wide enough for their contents, except the label
+        #column. Rationale: only the label column does not have a
+        #reasonable upper bound size.
+        tableView.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeToContents)
+        tableView.horizontalHeader().setSectionResizeMode(1,
+            QHeaderView.Stretch)
+
         layout.addWidget(tableView, 0)
 
         detailLayout = QGridLayout(self)
