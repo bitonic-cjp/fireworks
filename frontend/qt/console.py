@@ -155,7 +155,7 @@ class Console(QPlainTextEdit):
 
             try:
                 output = self.backend.runCommand(*command)
-            except self.backend.Error as e:
+            except self.backend.CommandFailed as e:
                 output = str(e)
 
             output = pprint.pformat(output,

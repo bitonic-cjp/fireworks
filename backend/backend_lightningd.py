@@ -24,7 +24,7 @@ from .lightningd.lightning import LightningRpc
 
 
 class Backend:
-    class Error(Exception):
+    class CommandFailed(Exception):
         pass
 
     def __init__(self, config):
@@ -42,26 +42,36 @@ class Backend:
             cmd: str
                 command to be executed
             *args: [str, [...]]
-                command arguments (JSON-encoded)
+                command arguments (backend-specific format)
         Returns: Any structure of list, dict, str, int, float
             The output of the command
         Exceptions:
-            Backend.Error: the command failed
+            Backend.CommandFailed: the command failed
             TBD (e.g. not connected?)
         '''
 
-        args = list(args)
-        for i in range(len(args)):
+        #In this back-end, the format is "<name>=<JSON>" or "<name>=<str>"
+        kwargs = {}
+        for a in args:
             try:
-                args[i] = json.loads(args[i])
+                isPos = a.index('=')
+            except ValueError:
+                raise Backend.CommandFailed(
+                    'Argument \"%s\" does not conform to the name=value format' % \
+                    a)
+            name = a[:isPos]
+            value = a[isPos+1:]
+            try:
+                value = json.loads(value)
             except json.JSONDecodeError:
                 #In case it isn't JSON, keep it as a string
                 pass
+            kwargs[name] = value
 
         try:
-            return self.rpc._call(cmd, args)
-        except ValueError as e:
-            raise Backend.Error(str(e))
+            return getattr(self.rpc, cmd)(**kwargs)
+        except (ValueError, TypeError) as e:
+            raise Backend.CommandFailed(str(e))
 
 
     def getNonChannelFunds(self):
