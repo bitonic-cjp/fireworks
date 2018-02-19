@@ -67,6 +67,10 @@ class InvoiceTable(QAbstractTableModel):
         return None
 
 
+    def getInvoice(self, index):
+        return self.dataList[index]
+
+
     def update(self, invoices):
         oldDataList = self.dataList
 
@@ -137,6 +141,11 @@ class Invoices(QWidget):
             self.amountLabel.setText('')
             self.statusLabel.setText('')
             return
+
         row = tuple(rows)[0]
-        print(row)
+        invoice = self.invoiceTable.getInvoice(row)
+        self.expirationLabel.setText(formatting.formatTimestamp(invoice.expirationTime))
+        self.labelLabel.setText(invoice.label)
+        self.amountLabel.setText(formatting.formatAmount(invoice.amount))
+        self.statusLabel.setText(invoice.status)
 
