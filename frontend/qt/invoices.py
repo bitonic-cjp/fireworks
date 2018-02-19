@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QTableView, QHeaderView
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QTableView, QHeaderView
 from PyQt5.QtCore import Qt, QAbstractTableModel
 
 from . import updatesignal
@@ -24,14 +24,11 @@ from .. import formatting
 
 
 class InvoiceTable(QAbstractTableModel):
-    def __init__(self, parent, backend):
+    def __init__(self, parent):
         super().__init__(parent)
         self.header = \
             ['Expiration date', 'Label', 'Amount', 'Status']
         self.dataList = []
-
-        self.backend = backend
-        updatesignal.connect(self.update)
 
 
     def rowCount(self, parent):
@@ -56,8 +53,7 @@ class InvoiceTable(QAbstractTableModel):
         return self.dataList[index.row()][index.column()]
 
 
-    def update(self):
-        invoices = self.backend.getInvoices()
+    def update(self, invoices):
         oldDataList = self.dataList
 
         #Initially prepend every item with an unformatted timestamp
@@ -81,9 +77,11 @@ class InvoiceTable(QAbstractTableModel):
 class Invoices(QWidget):
     def __init__(self, parent, backend):
         super().__init__(parent)
+        self.backend = backend
+
         layout = QHBoxLayout(self)
 
-        self.invoiceTable = InvoiceTable(self, backend)
+        self.invoiceTable = InvoiceTable(self)
         tableView = QTableView(self)
         tableView.setModel(self.invoiceTable)
         tableView.setSelectionBehavior(QTableView.SelectRows)
@@ -97,4 +95,11 @@ class Invoices(QWidget):
         layout.addWidget(invoiceView, 1)
 
         self.setLayout(layout)
+
+        updatesignal.connect(self.update)
+
+
+    def update(self):
+        invoices = self.backend.getInvoices()
+        self.invoiceTable.update(invoices)
 
