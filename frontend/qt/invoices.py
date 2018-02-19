@@ -17,7 +17,7 @@
 
 import copy
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QGridLayout, QLabel, QTableView, QHeaderView
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QGridLayout, QLabel, QTableView, QHeaderView, QSizePolicy
 from PyQt5.QtCore import Qt, QAbstractTableModel
 
 from . import updatesignal
@@ -105,6 +105,11 @@ class Invoices(QWidget):
             QHeaderView.ResizeToContents)
         tableView.horizontalHeader().setSectionResizeMode(1,
             QHeaderView.Stretch)
+
+        policy = tableView.sizePolicy()
+        policy.setHorizontalPolicy(QSizePolicy.Minimum)
+        tableView.setSizePolicy(policy)
+        tableView.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         layout.addWidget(tableView, 0)
 
