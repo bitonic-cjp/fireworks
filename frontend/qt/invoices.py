@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QTableView, QHeaderView
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QGridLayout, QLabel, QTableView, QHeaderView
 from PyQt5.QtCore import Qt, QAbstractTableModel
 
 from . import updatesignal
@@ -89,17 +89,47 @@ class Invoices(QWidget):
         for i in range(tableView.horizontalHeader().count()):
             tableView.horizontalHeader().setSectionResizeMode(
                 QHeaderView.ResizeToContents)
-        layout.addWidget(tableView, 1)
+        layout.addWidget(tableView, 0)
 
-        invoiceView = QWidget(self)
-        layout.addWidget(invoiceView, 1)
+        detailLayout = QGridLayout(self)
+        layout.addLayout(detailLayout, 0)
+
+        labels = ['Expiration date:', 'Label:', 'Amount:', 'Status:']
+        for i, txt in enumerate(labels):
+            label = QLabel(self)
+            label.setText(txt)
+            detailLayout.addWidget(label, i, 0)
+
+        self.expirationLabel = QLabel(self)
+        self.labelLabel = QLabel(self)
+        self.amountLabel = QLabel(self)
+        self.statusLabel = QLabel(self)
+        detailLayout.addWidget(self.expirationLabel, 0, 1)
+        detailLayout.addWidget(self.labelLabel, 1, 1)
+        detailLayout.addWidget(self.amountLabel, 2, 1)
+        detailLayout.addWidget(self.statusLabel, 3, 1)
 
         self.setLayout(layout)
 
         updatesignal.connect(self.update)
+        tableView.selectionModel().selectionChanged.connect(self.onSelectInvoice)
 
 
     def update(self):
         invoices = self.backend.getInvoices()
         self.invoiceTable.update(invoices)
+
+
+    def onSelectInvoice(self, selected, deselected):
+        rows = set()
+        for index in selected.indexes():
+            rows.add(index.row())
+        if len(rows) != 1:
+            self.expirationLabel.setText('')
+            self.labelLabel.setText('')
+            self.amountLabel.setText('')
+            self.statusLabel.setText('')
+            return
+        row = tuple(rows)[0]
+        print(row)
 
