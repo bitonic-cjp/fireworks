@@ -22,6 +22,7 @@ from PyQt5.QtCore import Qt, QAbstractTableModel
 
 from . import updatesignal
 from .. import formatting
+from .newinvoicedialog import NewInvoiceDialog
 
 
 
@@ -172,5 +173,6 @@ class Invoices(QWidget):
 
 
     def onCreateNewInvoice(self):
-        print('Create new invoice')
+        dialog = NewInvoiceDialog(self, self.backend)
+        dialog.exec()
 
