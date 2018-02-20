@@ -18,6 +18,7 @@
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QGridLayout, QLabel, QPlainTextEdit, QLineEdit
 
 from . import updatesignal
+from .amountinput import AmountInput
 
 
 
@@ -38,7 +39,7 @@ class NewInvoiceDialog(QDialog):
 
         self.labelText = QLineEdit(self)
         self.descriptionText = QPlainTextEdit(self)
-        self.amountText = QLineEdit(self) #TODO: custom widget
+        self.amountText = AmountInput(self)
         self.expiryText = QLineEdit(self) #TODO: custom widget
 
         layout.addWidget(self.labelText      , 0, 1)
