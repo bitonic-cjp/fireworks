@@ -71,7 +71,7 @@ class InvoiceTable(QAbstractTableModel):
         return self.dataList[index]
 
 
-    def update(self, invoices):
+    def updateInvoices(self, invoices):
         oldDataList = self.dataList
 
         newDataList = copy.deepcopy(invoices)
@@ -139,7 +139,7 @@ class Invoices(QWidget):
 
     def update(self):
         invoices = self.backend.getInvoices()
-        self.invoiceTable.update(invoices)
+        self.invoiceTable.updateInvoices(invoices)
 
 
     def onSelectInvoice(self, selected, deselected):
