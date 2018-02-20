@@ -17,7 +17,7 @@
 
 import copy
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QGridLayout, QLabel, QTableView, QHeaderView, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QPushButton, QTableView, QHeaderView, QSizePolicy
 from PyQt5.QtCore import Qt, QAbstractTableModel
 
 from . import updatesignal
@@ -92,6 +92,14 @@ class Invoices(QWidget):
 
         layout = QHBoxLayout(self)
 
+        #### LEFT SIDE ###
+        listLayout = QVBoxLayout(self)
+        layout.addLayout(listLayout, 0)
+
+        newInvoiceButton = QPushButton('Create new invoice', self)
+        listLayout.addWidget(newInvoiceButton, 0)
+        newInvoiceButton.clicked.connect(self.onCreateNewInvoice)
+
         self.invoiceTable = InvoiceTable(self)
         tableView = QTableView(self)
         tableView.setModel(self.invoiceTable)
@@ -111,8 +119,11 @@ class Invoices(QWidget):
         tableView.setSizePolicy(policy)
         tableView.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        layout.addWidget(tableView, 0)
+        tableView.selectionModel().selectionChanged.connect(self.onSelectInvoice)
 
+        listLayout.addWidget(tableView, 0)
+
+        #### RIGHT SIDE ###
         detailLayout = QGridLayout(self)
         layout.addLayout(detailLayout, 0)
 
@@ -134,7 +145,6 @@ class Invoices(QWidget):
         self.setLayout(layout)
 
         updatesignal.connect(self.update)
-        tableView.selectionModel().selectionChanged.connect(self.onSelectInvoice)
 
 
     def update(self):
@@ -159,4 +169,8 @@ class Invoices(QWidget):
         self.labelLabel.setText(invoice.label)
         self.amountLabel.setText(formatting.formatAmount(invoice.amount))
         self.statusLabel.setText(invoice.status)
+
+
+    def onCreateNewInvoice(self):
+        print('Create new invoice')
 
