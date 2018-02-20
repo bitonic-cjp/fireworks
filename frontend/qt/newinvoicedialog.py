@@ -56,3 +56,16 @@ class NewInvoiceDialog(QDialog):
 
         self.setLayout(layout)
 
+        self.accepted.connect(self.onAccepted)
+
+
+    def onAccepted(self):
+        self.bolt11, self.expirationTime = self.backend.makeNewInvoice(
+            label=self.labelText.text(),
+            description=self.descriptionText.toPlainText(),
+            amount=self.amountText.getValue(),
+            expiry=int(self.expiryText.text()))
+
+        updatesignal.update()
+
+

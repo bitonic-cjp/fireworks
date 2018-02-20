@@ -27,11 +27,17 @@ class AmountInput(QWidget):
         layout.setContentsMargins(0,0,0,0)
 
         self.input = QLineEdit(self)
+        self.input.setText('0.00000000 000')
         layout.addWidget(self.input, 1)
 
-        label = QLabel(self)
-        label.setText('BTC') #TODO: default unit setting; drop-down for units
-        layout.addWidget(label, 0)
+        self.unit = QLabel(self)
+        self.unit.setText('BTC') #TODO: default unit setting; drop-down for units
+        layout.addWidget(self.unit, 0)
 
         self.setLayout(layout)
+
+
+    def getValue(self):
+        amountText = self.input.text() + ' ' + self.unit.text()
+        return 42 #TODO: proper conversion
 

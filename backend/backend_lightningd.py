@@ -173,4 +173,29 @@ class Backend:
         ]
 
 
+    def makeNewInvoice(self, label, description, amount, expiry):
+        '''
+        Arguments:
+            label: str
+            description: str
+            amount: int
+                mSatoshi
+            expiry: int
+                Seconds from now
+        Returns: tuple(str, int)
+            The bolt11 payment code
+            The expiration time (UNIX timestamp)
+        Exceptions:
+            TBD (e.g. not connected?)
+        '''
+        data = self.rpc.invoice(
+            msatoshi=amount,
+            label=label,
+            description=description,
+            expiry=expiry
+            )
+
+        return (data['bolt11'], data['expires_at'])
+
 logging.info('Loaded Lightningd back-end module')
+
