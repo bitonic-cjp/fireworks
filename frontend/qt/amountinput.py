@@ -17,6 +17,8 @@
 
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QLineEdit
 
+from .. import formatting
+
 
 
 class AmountInput(QWidget):
@@ -38,5 +40,5 @@ class AmountInput(QWidget):
 
     def getValue(self):
         amountText = self.input.text() + ' ' + self.unit.text()
-        return 42 #TODO: proper conversion
+        return formatting.unformatAmount(amountText)
 

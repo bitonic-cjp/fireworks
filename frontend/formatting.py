@@ -16,6 +16,7 @@
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import decimal
 
 
 
@@ -40,6 +41,17 @@ def formatTimestamp(timestamp):
     return dt.strftime('%c (%Z)')
 
 
+
+amountUnits = \
+{
+'mSatoshi':            1,
+'Satoshi' :         1000,
+'uBTC'    :       100000,
+'mBTC'    :    100000000,
+'BTC'     : 100000000000,
+}
+
+
 def formatAmount(amount):
     '''
     Arguments:
@@ -59,4 +71,33 @@ def formatAmount(amount):
     mSat = digits[-3:]
 
     return '%s.%s %s BTC' % (BTC, Sat, mSat)
+
+
+def unformatAmount(text):
+    '''
+    Arguments:
+        text: str
+            the formatted amount. Should be:
+            [x][.y]U
+            where x and y consist of decimal characters, and U is a recognized
+            unit. Whitespace is ignored.
+    Returns: int
+        amount in mSatoshi
+    Exceptions:
+        Exception: syntax error
+    '''
+    #Remove whitespace:
+    for c in ' \t\r\n':
+        text = text.replace(c, '')
+
+    #Find and extract unit
+    lastDecimalPos = -1
+    while text[lastDecimalPos].isalpha():
+        lastDecimalPos -= 1
+    unit = text[lastDecimalPos+1:]
+    text = text[:lastDecimalPos+1]
+
+    multiplier = amountUnits[unit]
+    amount = multiplier * decimal.Decimal(text)
+    return int(amount)
 
