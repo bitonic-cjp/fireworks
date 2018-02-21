@@ -15,6 +15,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QGridLayout, QLabel, QFrame, QTextEdit
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
@@ -99,7 +101,27 @@ class ShowInvoiceDialog(QDialog):
             Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
         layout.addWidget(label, 5, 1)
 
-        #TODO: add QR code
+        try:
+            from qrcode import QRCode
+            from PIL.ImageQt import ImageQt
+
+            qr = QRCode(
+                    box_size = 4,
+                    border = 4,
+                    )
+            qr.add_data('lightning:' + self.bolt11)
+            qr.make()
+
+            img = qr.make_image()
+            img = ImageQt(img)
+            img = QtGui.QPixmap.fromImage(img)
+
+            label = QLabel(self)
+            label.setPixmap(img)
+            layout.addWidget(label, 6, 0, 1, 2, Qt.AlignHCenter)
+
+        except ImportError as e:
+            logging.warning('Cannot display QR codes: ' + str(e))
 
         dialogButtons = QDialogButtonBox(
             QDialogButtonBox.Close)
