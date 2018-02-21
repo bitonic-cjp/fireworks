@@ -15,9 +15,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QGridLayout, QLabel, QFrame
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QGridLayout, QLabel, QFrame, QTextEdit
+from PyQt5 import QtGui
+from PyQt5.QtCore import Qt
 
 from . import updatesignal
+from .. import formatting
 
 
 
@@ -29,6 +32,29 @@ class HLine(QFrame):
 
 
 
+class BigLabel(QTextEdit):
+    def __init__(self, text, parent):
+        super().__init__(text, parent)
+
+        #make it look and feel like an ordinary label
+        self.setReadOnly(True)
+        self.setFrameStyle(QFrame.NoFrame)
+        #pal = self.palette()
+        #pal.setColor(QPalette.Base, Qt.transparent)
+        #self.setPalette(pal)
+
+        #wrap anywhere, adjust minimum height on the fly
+        self.setLineWrapMode(QTextEdit.WidgetWidth)
+        self.setWordWrapMode(QtGui.QTextOption.WrapAnywhere)
+        self.document().documentLayout().documentSizeChanged.connect(
+            self.adjustMinimumSize)
+
+
+    def adjustMinimumSize(self, size):
+        self.setMinimumHeight(size.height() + 2 * self.frameWidth())
+
+
+
 class ShowInvoiceDialog(QDialog):
     def __init__(self, parent, backend, label, bolt11):
         super().__init__(parent)
@@ -37,23 +63,65 @@ class ShowInvoiceDialog(QDialog):
         self.label  = label
         self.bolt11 = bolt11
 
+        boldFont = QtGui.QFont()
+        boldFont.setBold(True)
+
         self.setWindowTitle('New invoice data')
 
         layout = QGridLayout(self)
 
-        labels = ['Label:', 'Description:', 'Amount:', 'Expiration date:']
+        labels = ['Amount:', 'Expiration date:', 'Status:']
         for i, txt in enumerate(labels):
             label = QLabel(txt, self)
             layout.addWidget(label, i, 0)
 
-        layout.addWidget(HLine(self), 4, 0, 1, 2)
+        self.amountLabel = QLabel(self)
+        self.expirationLabel = QLabel(self)
+        self.statusLabel = QLabel(self)
+        layout.addWidget(self.amountLabel, 0, 1)
+        layout.addWidget(self.expirationLabel, 1, 1)
+        layout.addWidget(self.statusLabel, 2, 1)
 
-        #TODO: add bolt11 text and QR code
+        layout.addWidget(HLine(self), 3, 0, 1, 2)
+
+        label = QLabel('Show this information to the payer:', self)
+        label.setFont(boldFont)
+        layout.addWidget(
+            label,
+            4, 0, 1, 2)
+
+        layout.addWidget(
+            QLabel('Invoice code:', self), 5, 0)
+
+        label = BigLabel(self.bolt11, self)
+        label.setFont(boldFont)
+        label.setTextInteractionFlags(
+            Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
+        layout.addWidget(label, 5, 1)
+
+        #TODO: add QR code
 
         dialogButtons = QDialogButtonBox(
             QDialogButtonBox.Close)
         dialogButtons.rejected.connect(self.reject)
-        layout.addWidget(dialogButtons, 5, 0, 1, 2)
+        layout.addWidget(dialogButtons, 7, 0, 1, 2)
 
         self.setLayout(layout)
+
+        updatesignal.connect(self.update)
+        self.update()
+
+
+    def update(self):
+        for invoice in self.backend.getInvoices():
+            if invoice.label == self.label:
+                self.amountLabel.setText(
+                    formatting.formatAmount(invoice.amount))
+                self.expirationLabel.setText(
+                    formatting.formatTimestamp(invoice.expirationTime))
+                self.statusLabel.setText(invoice.status)
+
+                #TODO: grey out the dialog if the invoice is expired
+
+                break
 
