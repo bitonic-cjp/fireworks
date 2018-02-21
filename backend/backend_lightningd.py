@@ -186,14 +186,18 @@ class Backend:
             The bolt11 payment code
             The expiration time (UNIX timestamp)
         Exceptions:
+            Backend.CommandFailed: the command failed (e.g. label already exists)
             TBD (e.g. not connected?)
         '''
-        data = self.rpc.invoice(
-            msatoshi=amount,
-            label=label,
-            description=description,
-            expiry=expiry
-            )
+        try:
+            data = self.rpc.invoice(
+                msatoshi=amount,
+                label=label,
+                description=description,
+                expiry=expiry
+                )
+        except ValueError as e:
+            raise Backend.CommandFailed(str(e))
 
         return (data['bolt11'], data['expires_at'])
 

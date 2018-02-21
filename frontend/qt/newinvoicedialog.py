@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QGridLayout, QLabel, QPlainTextEdit, QLineEdit
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QGridLayout, QLabel, QPlainTextEdit, QLineEdit, QMessageBox
 
 from . import updatesignal
 from .amountinput import AmountInput
@@ -26,6 +26,8 @@ class NewInvoiceDialog(QDialog):
     def __init__(self, parent, backend):
         super().__init__(parent)
         self.backend = backend
+        self.bolt11 = None
+        self.expirationTime = None
 
         self.setWindowTitle('Create a new invoice')
 
@@ -60,12 +62,17 @@ class NewInvoiceDialog(QDialog):
 
 
     def onAccepted(self):
-        self.bolt11, self.expirationTime = self.backend.makeNewInvoice(
-            label=self.labelText.text(),
-            description=self.descriptionText.toPlainText(),
-            amount=self.amountText.getValue(),
-            expiry=int(self.expiryText.text()))
-
-        updatesignal.update()
-
+        try:
+            self.bolt11, self.expirationTime = self.backend.makeNewInvoice(
+                label=self.labelText.text(),
+                description=self.descriptionText.toPlainText(),
+                amount=self.amountText.getValue(),
+                expiry=int(self.expiryText.text()))
+            updatesignal.update()
+        except self.backend.CommandFailed as e:
+            updatesignal.update()
+            QMessageBox.critical(self, 'Failed to create a new invoice',
+                'Creating a new invoice failed with the following error message:\n\n'
+                 + str(e)
+                )
 
