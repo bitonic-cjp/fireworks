@@ -26,6 +26,8 @@ class NewInvoiceDialog(QDialog):
     def __init__(self, parent, backend):
         super().__init__(parent)
         self.backend = backend
+
+        self.label = None
         self.bolt11 = None
         self.expirationTime = None
 
@@ -68,6 +70,7 @@ class NewInvoiceDialog(QDialog):
                 description=self.descriptionText.toPlainText(),
                 amount=self.amountText.getValue(),
                 expiry=int(self.expiryText.text()))
+            self.label = self.labelText.text()
             updatesignal.update()
         except self.backend.CommandFailed as e:
             updatesignal.update()
