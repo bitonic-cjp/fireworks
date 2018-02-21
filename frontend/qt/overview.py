@@ -43,8 +43,7 @@ class BalanceFrame(QFrame):
         self.boldFont = QtGui.QFont()
         self.boldFont.setBold(True)
 
-        titleLabel = QLabel(self)
-        titleLabel.setText(title)
+        titleLabel = QLabel(title, self)
         titleLabel.setFont(self.boldFont)
         self.layout.addWidget(titleLabel, 0, 0, 1, 2)
 
@@ -59,12 +58,10 @@ class BalanceFrame(QFrame):
 
 
     def addAmountElement(self, index, label):
-        amountLabel = QLabel(self)
-        amountLabel.setText(label)
+        amountLabel = QLabel(label, self)
         self.layout.addWidget(amountLabel, 1+index, 0)
 
-        amountWidget = QLabel(self)
-        amountWidget.setText('0.00000000 000 BTC')
+        amountWidget = QLabel('0.00000000 000 BTC', self)
         amountWidget.setFont(self.boldFont)
         self.layout.addWidget(amountWidget, 1+index, 1, Qt.AlignRight)
         self.amountWidgets.append(amountWidget)

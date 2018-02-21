@@ -37,8 +37,7 @@ class NewInvoiceDialog(QDialog):
 
         labels = ['Label:', 'Description:', 'Amount:', 'Expires:']
         for i, txt in enumerate(labels):
-            label = QLabel(self)
-            label.setText(txt)
+            label = QLabel(txt, self)
             layout.addWidget(label, i, 0)
 
         self.labelText = QLineEdit(self)

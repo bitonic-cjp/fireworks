@@ -30,8 +30,7 @@ class AmountInput(QWidget):
         self.input.setText('0.00000000 000')
         layout.addWidget(self.input, 1)
 
-        self.unit = QLabel(self)
-        self.unit.setText('BTC') #TODO: default unit setting; drop-down for units
+        self.unit = QLabel('BTC', self) #TODO: default unit setting; drop-down for units
         layout.addWidget(self.unit, 0)
 
         self.setLayout(layout)

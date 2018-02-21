@@ -131,8 +131,7 @@ class Invoices(QWidget):
 
         labels = ['Expiration date:', 'Label:', 'Amount:', 'Status:']
         for i, txt in enumerate(labels):
-            label = QLabel(self)
-            label.setText(txt)
+            label = QLabel(txt, self)
             detailLayout.addWidget(label, i, 0)
 
         self.expirationLabel = QLabel(self)
