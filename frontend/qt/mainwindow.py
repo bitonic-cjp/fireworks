@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import QWidget, QMainWindow, QAction, QMessageBox, QVBoxLay
 from .console import Console
 from .overview import Overview
 from .invoices import Invoices
+from .payments import Payments
 
 
 
@@ -60,7 +61,7 @@ class MainWindow(QMainWindow):
             [
             ('Overview', Overview(None, backend)),
             ('Receive' , Invoices(None, backend)),
-            ('Send'    , QWidget()),
+            ('Send'    , Payments(None, backend)),
             ('Channels', QWidget()),
             ('Console' , Console(None, backend))
             ])

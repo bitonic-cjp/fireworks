@@ -49,6 +49,41 @@ class Invoice:
 
 
 
+class Payment:
+    '''
+    amount: int
+        mSatoshi
+    label: str
+    timestamp: int
+        UNIX timestamp
+    status: str
+    destination: str
+    paymentHash: str
+    paymentPreimage: str
+    '''
+
+    def __init__(self, amount, label, timestamp, status, destination, paymentHash, paymentPreimage):
+        self.amount = amount
+        self.label = label
+        self.timestamp = timestamp
+        self.status = status
+        self.destination = destination
+        self.paymentHash = paymentHash
+        self.paymentPreimage = paymentPreimage
+
+
+    def __eq__(self, payment):
+        return \
+            self.amount == payment.amount and \
+            self.label == payment.label and \
+            self.timestamp == payment.timestamp and \
+            self.status == payment.status and \
+            self.destination == payment.destination and \
+            self.paymentHash == payment.paymentHash and \
+            self.paymentPreimage == payment.paymentPreimage
+
+
+
 class Backend:
     class CommandFailed(Exception):
         pass
@@ -170,6 +205,30 @@ class Backend:
             status=x['status']
             )
         for x in invoices
+        ]
+
+
+    def getPayments(self):
+        '''
+        Arguments:
+        Returns: list(Payment)
+            The payments.
+        Exceptions:
+            TBD (e.g. not connected?)
+        '''
+        payments = self.rpc.listpayments()['payments']
+        return \
+        [
+        Payment(
+            label=str(x['id']),
+            timestamp=x['timestamp'],
+            amount=x['msatoshi'],
+            status=x['status'],
+            destination=x['destination'],
+            paymentHash=x['payment_hash'],
+            paymentPreimage=x['payment_preimage']
+            )
+        for x in payments
         ]
 
 
