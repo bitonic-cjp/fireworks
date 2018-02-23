@@ -87,6 +87,8 @@ class Console(QPlainTextEdit):
         c = self.textCursor()
         if c.block() != self.document().lastBlock():
             self.moveCursor(QtGui.QTextCursor.End)
+        while self.getCursorPosition() < 0:
+            self.moveCursor(QtGui.QTextCursor.Right)
 
 
     def addToHistory(self, command):
