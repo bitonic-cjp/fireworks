@@ -114,8 +114,20 @@ class Console(QPlainTextEdit):
 
 
     def keyPressEvent(self, event):
+        def default():
+            return super(Console, self).keyPressEvent(event)
+
+        #Keys that don't force the cursor to the last line:
+        if event.matches(QtGui.QKeySequence.Copy):
+            return default()
+        if event.type() == QtCore.QEvent.KeyRelease:
+            return default()
+        if event.key() in (QtCore.Qt.Key_Control, QtCore.Qt.Key_Alt, QtCore.Qt.Key_Shift, QtCore.Qt.Key_AltGr):
+            return default()
+
         self.moveCursorToLastLine()
 
+        #Keys that do force the cursor to the last line:
         if event.key() in (QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return):
             self.runCommand()
             return
@@ -134,7 +146,7 @@ class Console(QPlainTextEdit):
             self.setCommand(self.getNextHistoryEntry())
             return
 
-        super(Console, self).keyPressEvent(event)
+        return default()
 
 
     def getWidthInCharacters(self):
