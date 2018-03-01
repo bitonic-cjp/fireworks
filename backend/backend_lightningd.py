@@ -20,113 +20,37 @@ import logging
 import json
 
 from .lightningd.lightning import LightningRpc
+from utils.struct import Struct
 
 
 
-class Invoice:
-    '''
-    amount: int
-        mSatoshi
-    label: str
-    expirationTime: int
-        UNIX timestamp
-    status: str
-    '''
-
-    def __init__(self, amount, label, expirationTime, status):
-        self.amount = amount
-        self.label = label
-        self.expirationTime = expirationTime
-        self.status = status
+class Invoice(Struct):
+    amount = None         #int, mSatoshi
+    label = None          #str
+    expirationTime = None #int, UNIX timestamp
+    status = None         #str
 
 
-    def __eq__(self, invoice):
-        return \
-            self.amount == invoice.amount and \
-            self.label == invoice.label and \
-            self.expirationTime == invoice.expirationTime and \
-            self.status == invoice.status
+class InvoiceData(Struct):
+    creationTime = None          #int, UNIX timestamp
+    expirationTime = None        #int, UNIX timestamp
+    min_final_cltv_expiry = None #int
+    amount = None                #int, mSatoshi
+    currency = None              #str, BIP-173
+    description = None           #str
+    payee = None                 #str
+    paymentHash = None           #str
+    signature = None             #str
 
 
-
-class InvoiceData:
-    '''
-    creationTime: int
-        UNIX timestamp
-    expirationTime: int
-        UNIX timestamp
-    min_final_cltv_expiry: int
-    amount: int
-        mSatoshi
-    currency: str
-    description: str
-    payee: str
-    paymentHash: str
-    signature: str
-    '''
-
-    def __init__(self,
-        creationTime, expirationTime, min_final_cltv_expiry,
-        amount, currency,
-        description, payee, paymentHash, signature):
-
-        self.creationTime = creationTime
-        self.expirationTime = expirationTime
-        self.min_final_cltv_expiry = min_final_cltv_expiry
-        self.amount = amount
-        self.currency = currency
-        self.description = description
-        self.payee = payee
-        self.paymentHash = paymentHash
-        self.signature = signature
-
-
-    def __eq__(self, invoiceData):
-        return \
-            self.creationTime == invoiceData.creationTime and \
-            self.expirationTime == invoiceData.expirationTime and \
-            self.min_final_cltv_expiry == invoiceData.min_final_cltv_expiry and \
-            self.amount == invoiceData.amount and \
-            self.currency == invoiceData.currency and \
-            self.description == invoiceData.description and \
-            self.payee == invoiceData.payee and \
-            self.paymentHash == invoiceData.paymentHash and \
-            self.signature == invoiceData.signature
-
-
-
-class Payment:
-    '''
-    amount: int
-        mSatoshi
-    label: str
-    timestamp: int
-        UNIX timestamp
-    status: str
-    destination: str
-    paymentHash: str
-    paymentPreimage: str
-    '''
-
-    def __init__(self, amount, label, timestamp, status, destination, paymentHash, paymentPreimage):
-        self.amount = amount
-        self.label = label
-        self.timestamp = timestamp
-        self.status = status
-        self.destination = destination
-        self.paymentHash = paymentHash
-        self.paymentPreimage = paymentPreimage
-
-
-    def __eq__(self, payment):
-        return \
-            self.amount == payment.amount and \
-            self.label == payment.label and \
-            self.timestamp == payment.timestamp and \
-            self.status == payment.status and \
-            self.destination == payment.destination and \
-            self.paymentHash == payment.paymentHash and \
-            self.paymentPreimage == payment.paymentPreimage
+class Payment(Struct):
+    amount = None          #int, mSatoshi
+    label = None           #str
+    timestamp = None       #int, UNIX timestamp
+    status = None          #str
+    destination = None     #str
+    paymentHash = None     #str
+    paymentPreimage = None #str
 
 
 
@@ -325,15 +249,15 @@ class Backend:
         creationTime = result['created_at']
         expirationTime = creationTime + result['expiry']
         return InvoiceData(
-            creationTime,
-            expirationTime,
-            result['min_final_cltv_expiry'],
-            result['msatoshi'],
-            result['currency'],
-            result['description'],
-            result['payee'],
-            result['payment_hash'],
-            result['signature']
+            creationTime=creationTime,
+            expirationTime=expirationTime,
+            min_final_cltv_expiry=result['min_final_cltv_expiry'],
+            amount=result['msatoshi'],
+            currency=result['currency'],
+            description=result['description'],
+            payee=result['payee'],
+            paymentHash=result['payment_hash'],
+            signature=result['signature']
             )
 
 
