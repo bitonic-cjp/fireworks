@@ -109,7 +109,8 @@ class ShowInvoiceDialog(QDialog):
                     box_size = 4,
                     border = 4,
                     )
-            qr.add_data('lightning:' + self.bolt11)
+            #Upper case for more compact QR code:
+            qr.add_data('LIGHTNING:' + self.bolt11.upper())
             qr.make()
 
             img = qr.make_image()
