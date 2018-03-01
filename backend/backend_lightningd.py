@@ -49,6 +49,52 @@ class Invoice:
 
 
 
+class InvoiceData:
+    '''
+    creationTime: int
+        UNIX timestamp
+    expirationTime: int
+        UNIX timestamp
+    min_final_cltv_expiry: int
+    amount: int
+        mSatoshi
+    currency: str
+    description: str
+    payee: str
+    paymentHash: str
+    signature: str
+    '''
+
+    def __init__(self,
+        creationTime, expirationTime, min_final_cltv_expiry,
+        amount, currency,
+        description, payee, paymentHash, signature):
+
+        self.creationTime = creationTime
+        self.expirationTime = expirationTime
+        self.min_final_cltv_expiry = min_final_cltv_expiry
+        self.amount = amount
+        self.currency = currency
+        self.description = description
+        self.payee = payee
+        self.paymentHash = paymentHash
+        self.signature = signature
+
+
+    def __eq__(self, invoiceData):
+        return \
+            self.creationTime == invoiceData.creationTime and \
+            self.expirationTime == invoiceData.expirationTime and \
+            self.min_final_cltv_expiry == invoiceData.min_final_cltv_expiry and \
+            self.amount == invoiceData.amount and \
+            self.currency == invoiceData.currency and \
+            self.description == invoiceData.description and \
+            self.payee == invoiceData.payee and \
+            self.paymentHash == invoiceData.paymentHash and \
+            self.signature == invoiceData.signature
+
+
+
 class Payment:
     '''
     amount: int
@@ -259,6 +305,54 @@ class Backend:
             raise Backend.CommandFailed(str(e))
 
         return (data['bolt11'], data['expires_at'])
+
+
+    def decodeInvoiceData(self, bolt11):
+        '''
+        Arguments:
+            bolt11: str
+        Returns: InvoiceData
+        Exceptions:
+            Backend.CommandFailed: the command failed (e.g. invalid bolt11 code)
+            TBD (e.g. not connected?)
+        '''
+        try:
+            result = self.rpc.decodepay(bolt11=bolt11)
+        except ValueError as e:
+            raise Backend.CommandFailed(str(e))
+
+		#TODO: support for bolt11 data that doesn't contain all fields
+        creationTime = result['created_at']
+        expirationTime = creationTime + result['expiry']
+        return InvoiceData(
+            creationTime,
+            expirationTime,
+            result['min_final_cltv_expiry'],
+            result['msatoshi'],
+            result['currency'],
+            result['description'],
+            result['payee'],
+            result['payment_hash'],
+            result['signature']
+            )
+
+
+    def pay(self, bolt11):
+        '''
+        Arguments:
+            bolt11: str
+        Returns: None
+        Exceptions:
+            Backend.CommandFailed: the command failed (e.g. invalid bolt11 code)
+            TBD (e.g. not connected?)
+        '''
+        try:
+            #TODO: support for the other arguments of pay
+            self.rpc.pay(bolt11=bolt11)
+        except ValueError as e:
+            raise Backend.CommandFailed(str(e))
+
+
 
 logging.info('Loaded Lightningd back-end module')
 

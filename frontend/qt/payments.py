@@ -22,6 +22,7 @@ from PyQt5.QtCore import Qt, QAbstractTableModel
 
 from . import updatesignal
 from .. import formatting
+from .newpaymentdialog import NewPaymentDialog
 
 
 
@@ -188,7 +189,6 @@ class Payments(QWidget):
         self.preimageLabel.setText(payment.paymentPreimage)
 
     def onCreateNewPayment(self):
-        pass #TODO
-        #dialog = NewPaymentDialog(self, self.backend)
-        #dialog.exec()
+        dialog = NewPaymentDialog(self, self.backend)
+        dialog.exec()
 

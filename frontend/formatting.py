@@ -52,11 +52,13 @@ amountUnits = \
 }
 
 
-def formatAmount(amount):
+def formatAmount(amount, currency='bc'): #TODO: assume no default!
     '''
     Arguments:
         amount: int
             amount in mSatoshi
+        currency: str
+            BIP-173 currency code
     Returns: str
         the formatted amount
     Exceptions:
