@@ -62,7 +62,7 @@ class InvoiceTable(QAbstractTableModel):
         elif col == 1:
             return invoice.label
         elif col == 2:
-            return formatting.formatAmount(invoice.amount)
+            return formatting.formatAmount(invoice.amount, invoice.currency)
         elif col == 3:
             return invoice.status
 
@@ -168,7 +168,7 @@ class Invoices(QWidget):
         invoice = self.invoiceTable.getInvoice(row)
         self.expirationLabel.setText(formatting.formatTimestamp(invoice.expirationTime))
         self.labelLabel.setText(invoice.label)
-        self.amountLabel.setText(formatting.formatAmount(invoice.amount))
+        self.amountLabel.setText(formatting.formatAmount(invoice.amount, invoice.currency))
         self.statusLabel.setText(invoice.status)
 
 

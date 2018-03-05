@@ -61,7 +61,7 @@ class PaymentTable(QAbstractTableModel):
         elif col == 1:
             return payment.label
         elif col == 2:
-            return formatting.formatAmount(payment.amount)
+            return formatting.formatAmount(payment.amount, payment.currency)
         elif col == 3:
             return payment.status
 
@@ -182,7 +182,7 @@ class Payments(QWidget):
         payment = self.paymentTable.getPayment(row)
         self.dateLabel.setText(formatting.formatTimestamp(payment.timestamp))
         self.labelLabel.setText(payment.label)
-        self.amountLabel.setText(formatting.formatAmount(payment.amount))
+        self.amountLabel.setText(formatting.formatAmount(payment.amount, payment.currency))
         self.statusLabel.setText(payment.status)
         self.destinationLabel.setText(payment.destination)
         self.hashLabel.setText(payment.paymentHash)

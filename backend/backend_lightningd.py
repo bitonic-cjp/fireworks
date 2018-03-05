@@ -26,6 +26,7 @@ from utils.struct import Struct
 
 class Invoice(Struct):
     amount = None         #int, mSatoshi
+    currency = None       #str, BIP-173
     label = None          #str
     expirationTime = None #int, UNIX timestamp
     status = None         #str
@@ -45,6 +46,7 @@ class InvoiceData(Struct):
 
 class Payment(Struct):
     amount = None          #int, mSatoshi
+    currency = None        #str, BIP-173
     label = None           #str
     timestamp = None       #int, UNIX timestamp
     status = None          #str
@@ -103,6 +105,26 @@ class Backend:
             return getattr(self.rpc, cmd)(**kwargs)
         except (ValueError, TypeError) as e:
             raise Backend.CommandFailed(str(e))
+
+
+    def getNativeCurrency(self):
+        '''
+        Arguments:
+        Returns: str
+            BIP-173 currency code
+        Exceptions:
+            TBD (e.g. not connected?)
+        '''
+        network = self.rpc.getinfo()['network']
+        return \
+        {
+        'bitcoin': 'bc',
+        'regtest': 'bcrt',
+        'testnet': 'tb',
+
+        'litecoin': 'ltc',
+        'litecoin-testnet': 'ltct',
+        }[network]
 
 
     def getNonChannelFunds(self):
@@ -166,12 +188,14 @@ class Backend:
             TBD (e.g. not connected?)
         '''
         invoices = self.rpc.listinvoices()['invoices']
+        currency = self.getNativeCurrency()
         return \
         [
         Invoice(
             label=x['label'],
             expirationTime=x['expires_at'],
             amount=x['msatoshi'],
+            currency=currency,
             status=x['status']
             )
         for x in invoices
@@ -187,12 +211,14 @@ class Backend:
             TBD (e.g. not connected?)
         '''
         payments = self.rpc.listpayments()['payments']
+        currency = self.getNativeCurrency()
         return \
         [
         Payment(
             label=str(x['id']),
             timestamp=x['timestamp'],
             amount=x['msatoshi'],
+            currency=currency,
             status=x['status'],
             destination=x['destination'],
             paymentHash=x['payment_hash'],

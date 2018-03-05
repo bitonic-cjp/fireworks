@@ -61,7 +61,7 @@ class BalanceFrame(QFrame):
         amountLabel = QLabel(label, self)
         self.layout.addWidget(amountLabel, 1+index, 0)
 
-        amountWidget = QLabel('0.00000000 000 BTC', self)
+        amountWidget = QLabel('(unknown)', self)
         amountWidget.setFont(self.boldFont)
         self.layout.addWidget(amountWidget, 1+index, 1, Qt.AlignRight)
         self.amountWidgets.append(amountWidget)
@@ -72,9 +72,9 @@ class BalanceFrame(QFrame):
         self.layout.addWidget(widget, 1+index, 0, 1, 2)
 
 
-    def updateAmount(self, index, amount):
+    def updateAmount(self, index, amount, currency):
         widget = self.amountWidgets[index]
-        widget.setText(formatting.formatAmount(amount))
+        widget.setText(formatting.formatAmount(amount, currency))
 
 
 
@@ -120,6 +120,7 @@ class Overview(QWidget):
     def update(self):
         nonChannelFunds = self.backend.getNonChannelFunds()
         channelFunds = self.backend.getChannelFunds()
+        currency = self.backend.getNativeCurrency()
 
         confirmed   = sum(x[0] for x in nonChannelFunds.values() if x[1])
         unconfirmed = sum(x[0] for x in nonChannelFunds.values() if not x[1])
@@ -133,14 +134,14 @@ class Overview(QWidget):
 
         lockedResult = lockedIn - lockedOut
 
-        self.sendFrame.updateAmount(0, ours)
-        self.sendFrame.updateAmount(1, confirmed)
-        self.sendFrame.updateAmount(2, unconfirmed)
-        self.sendFrame.updateAmount(3, total)
+        self.sendFrame.updateAmount(0, ours, currency)
+        self.sendFrame.updateAmount(1, confirmed, currency)
+        self.sendFrame.updateAmount(2, unconfirmed, currency)
+        self.sendFrame.updateAmount(3, total, currency)
 
-        self.lockedFrame.updateAmount(0, lockedIn)
-        self.lockedFrame.updateAmount(1, lockedOut)
-        self.lockedFrame.updateAmount(2, lockedResult)
+        self.lockedFrame.updateAmount(0, lockedIn, currency)
+        self.lockedFrame.updateAmount(1, lockedOut, currency)
+        self.lockedFrame.updateAmount(2, lockedResult, currency)
 
-        self.receiveFrame.updateAmount(0, theirs)
+        self.receiveFrame.updateAmount(0, theirs, currency)
 
