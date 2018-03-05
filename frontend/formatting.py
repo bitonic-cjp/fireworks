@@ -18,7 +18,7 @@
 import datetime
 import decimal
 
-from utils.struct import Struct
+from utils.currencies import currencyInfo
 
 
 
@@ -41,64 +41,6 @@ def formatTimestamp(timestamp):
     dt = datetime.datetime.fromtimestamp(timestamp, timezone)
 
     return dt.strftime('%c (%Z)')
-
-
-
-class CurrencyInfo(Struct):
-    defaultUnit = None #str
-    multipliers = {}   #dict of str->int: multiplier in mSatoshi
-
-
-currencyInfo = \
-{
-'bc': CurrencyInfo( #Bitcoin
-    defaultUnit='BTC',
-    multipliers={
-    'mSatoshi':            1,
-    'Satoshi' :         1000,
-    'uBTC'    :       100000,
-    'mBTC'    :    100000000,
-    'BTC'     : 100000000000,
-    }),
-'tb': CurrencyInfo( #Bitcoin-testnet
-    defaultUnit='tBTC',
-    multipliers={
-    'mSatoshi':            1,
-    'Satoshi' :         1000,
-    'utBTC'   :       100000,
-    'mtBTC'   :    100000000,
-    'tBTC'    : 100000000000,
-    }),
-'bcrt': CurrencyInfo( #Bitcoin-regtest
-    defaultUnit='rBTC',
-    multipliers={
-    'mSatoshi':            1,
-    'Satoshi' :         1000,
-    'urBTC'   :       100000,
-    'mrBTC'   :    100000000,
-    'rBTC'    : 100000000000,
-    }),
-
-
-'ltc': CurrencyInfo( #Litecoin
-    defaultUnit='LTC',
-    multipliers={
-    'mlitoshi':            1,
-    'litoshi' :         1000,
-    'uLTC'    :       100000,
-    'mLTC'    :    100000000,
-    'LTC'     : 100000000000,
-    }),
-'ltct': CurrencyInfo( #Litecoin-testnet
-    defaultUnit='tLTC',
-    multipliers={
-    'mlitoshi':            1,
-    'litoshi' :         1000,
-    'utLTC'   :       100000,
-    'mtLTC'   :    100000000,
-    'tLTC'    : 100000000000,
-    }),
-}
 
 
 def formatAmount(amount, currency='bc', unit=None): #TODO: assume no default!
