@@ -25,10 +25,7 @@ class UnixDomainSocketRpc(object):
                     return {'error': 'Connection to RPC server lost.'}
                 # Convert late to UTF-8 so glyphs split across recvs do not
                 # impact us
-                self.logger.debug("Received %r", buff)
-                self.logger.debug("Decoding...")
                 objs, _ = self.decoder.raw_decode(buff.decode("UTF-8"))
-                self.logger.debug("...done decoding")
                 return objs
             except ValueError:
                 # Probably didn't read enough
@@ -62,9 +59,7 @@ class UnixDomainSocketRpc(object):
             "id": 0
         })
         resp = self._readobj(sock)
-        self.logger.debug("Received response; closing socket")
         sock.close()
-        self.logger.debug("Socket closed")
 
         self.logger.debug("Received response for %s call: %r", method, resp)
         if "error" in resp:
@@ -198,7 +193,7 @@ class LightningRpc(UnixDomainSocketRpc):
         }
         return self.call("waitanyinvoice", payload)
 
-    def waitinvoice(self, label=None):
+    def waitinvoice(self, label):
         """
         Wait for an incoming payment matching the invoice with {label}
         """
