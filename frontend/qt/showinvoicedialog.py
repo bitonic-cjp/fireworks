@@ -139,7 +139,7 @@ class ShowInvoiceDialog(QDialog):
         for invoice in self.backend.getInvoices():
             if invoice.label == self.label:
                 self.amountLabel.setText(
-                    formatting.formatAmount(invoice.amount))
+                    formatting.formatAmount(invoice.amount, invoice.currency))
                 self.expirationLabel.setText(
                     formatting.formatTimestamp(invoice.expirationTime))
                 self.statusLabel.setText(invoice.status)
