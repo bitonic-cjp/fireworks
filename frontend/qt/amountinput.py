@@ -18,12 +18,16 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QLineEdit
 
 from .. import formatting
+from utils.currencies import currencyInfo
 
 
 
 class AmountInput(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, currency):
         super().__init__(parent)
+
+        self.currency = currency
+        info = currencyInfo[currency]
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
@@ -32,7 +36,9 @@ class AmountInput(QWidget):
         self.input.setText('0.00000000 000')
         layout.addWidget(self.input, 1)
 
-        self.unit = QLabel('BTC', self) #TODO: default unit setting; drop-down for units
+        self.unit = QLabel(
+            info.defaultUnit, #TODO: default unit setting; drop-down for units
+            self) 
         layout.addWidget(self.unit, 0)
 
         self.setLayout(layout)
@@ -40,5 +46,5 @@ class AmountInput(QWidget):
 
     def getValue(self):
         amountText = self.input.text() + ' ' + self.unit.text()
-        return formatting.unformatAmount(amountText)
+        return formatting.unformatAmount(amountText, self.currency)
 

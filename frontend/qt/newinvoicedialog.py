@@ -42,7 +42,7 @@ class NewInvoiceDialog(QDialog):
 
         self.labelText = QLineEdit(self)
         self.descriptionText = QPlainTextEdit(self)
-        self.amountText = AmountInput(self)
+        self.amountText = AmountInput(self, self.backend.getNativeCurrency())
         self.expiryText = QLineEdit(self) #TODO: custom widget
 
         layout.addWidget(self.labelText      , 0, 1)
