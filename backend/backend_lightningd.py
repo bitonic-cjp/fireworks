@@ -68,6 +68,9 @@ class Backend:
         socketFile = os.path.join(lightningDir, 'lightning-rpc')
         self.rpc = LightningRpc(socketFile)
 
+        #Cached:
+        self.nodeInfo = self.rpc.getinfo()
+
 
     def runCommand(self, cmd, *args):
         '''
@@ -115,7 +118,7 @@ class Backend:
         Exceptions:
             TBD (e.g. not connected?)
         '''
-        network = self.rpc.getinfo()['network']
+        network = self.nodeInfo['network']
         return \
         {
         'bitcoin': 'bc',
