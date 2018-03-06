@@ -77,6 +77,12 @@ class BalanceFrame(QFrame):
         widget.setText(formatting.formatAmount(amount, currency))
 
 
+    def setEnabled(self, enabled):
+        super().setEnabled(enabled)
+        for w in self.amountWidgets:
+            w.setText('-')
+
+
 
 class Overview(QWidget):
     def __init__(self, parent, backend):
@@ -122,8 +128,15 @@ class Overview(QWidget):
             nonChannelFunds = self.backend.getNonChannelFunds()
             channelFunds = self.backend.getChannelFunds()
             currency = self.backend.getNativeCurrency()
+            haveData = True
         except self.backend.NotConnected:
-            #TODO: erase all amounts and grey-out
+            haveData = False
+
+        self.sendFrame.setEnabled(haveData)
+        self.lockedFrame.setEnabled(haveData)
+        self.receiveFrame.setEnabled(haveData)
+
+        if not haveData:
             return
 
         confirmed   = sum(x[0] for x in nonChannelFunds.values() if x[1])

@@ -162,10 +162,20 @@ class Payments(QWidget):
     def update(self):
         try:
             payments = self.backend.getPayments()
+            haveData = True
         except self.backend.NotConnected:
-            #TODO: erase and grey-out
-            return
+            payments = []
+            haveData = False
+            self.dateLabel.setText('')
+            self.labelLabel.setText('')
+            self.amountLabel.setText('')
+            self.statusLabel.setText('')
+            self.destinationLabel.setText('')
+            self.hashLabel.setText('')
+            self.preimageLabel.setText('')
+
         self.paymentTable.updatePayments(payments)
+        self.setEnabled(haveData)
 
 
     def onSelectPayment(self, selected, deselected):

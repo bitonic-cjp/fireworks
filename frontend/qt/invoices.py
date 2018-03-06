@@ -151,10 +151,17 @@ class Invoices(QWidget):
     def update(self):
         try:
             invoices = self.backend.getInvoices()
+            haveData = True
         except self.backend.NotConnected:
-            #TODO: erase and grey-out
-            return
+            invoices = []
+            haveData = False
+            self.expirationLabel.setText('')
+            self.labelLabel.setText('')
+            self.amountLabel.setText('')
+            self.statusLabel.setText('')
+
         self.invoiceTable.updateInvoices(invoices)
+        self.setEnabled(haveData)
 
 
     def onSelectInvoice(self, selected, deselected):
