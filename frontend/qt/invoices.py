@@ -184,8 +184,20 @@ class Invoices(QWidget):
 
 
     def onCreateNewInvoice(self):
+        #Make a label that does not exist yet
+        existingLabels = \
+        set([
+        self.invoiceTable.getInvoice(i).label
+        for i in range(self.invoiceTable.rowCount(None))
+        ])
+        counter = 1
+        newLabel = 'Invoice %d' % counter
+        while newLabel in existingLabels:
+            counter += 1
+            newLabel = 'Invoice %d' % counter
+
         try:
-            dialog = NewInvoiceDialog(self, self.backend)
+            dialog = NewInvoiceDialog(self, self.backend, newLabel)
         except self.backend.NotConnected:
             QMessageBox.critical(self, 'Failed to create a new invoice',
                 'Creating a new invoice failed: back-end not connected.'

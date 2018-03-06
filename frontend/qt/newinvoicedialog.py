@@ -23,7 +23,7 @@ from .amountinput import AmountInput
 
 
 class NewInvoiceDialog(QDialog):
-    def __init__(self, parent, backend):
+    def __init__(self, parent, backend, invoiceLabel):
         super().__init__(parent)
         self.backend = backend
 
@@ -40,7 +40,7 @@ class NewInvoiceDialog(QDialog):
             label = QLabel(txt, self)
             layout.addWidget(label, i, 0)
 
-        self.labelText = QLineEdit(self)
+        self.labelText = QLineEdit(invoiceLabel, self)
         self.descriptionText = QPlainTextEdit(self)
         self.amountText = AmountInput(self, self.backend.getNativeCurrency())
         self.expiryText = QLineEdit(self) #TODO: custom widget
