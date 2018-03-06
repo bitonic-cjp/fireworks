@@ -136,7 +136,13 @@ class ShowInvoiceDialog(QDialog):
 
 
     def update(self):
-        for invoice in self.backend.getInvoices():
+        try:
+            invoices = self.backend.getInvoices()
+        except self.backend.NotConnected:
+            self.statusLabel.setText('Unknown (not connected to backend)')
+            return
+
+        for invoice in invoices:
             if invoice.label == self.label:
                 self.amountLabel.setText(
                     formatting.formatAmount(invoice.amount, invoice.currency))
@@ -146,5 +152,9 @@ class ShowInvoiceDialog(QDialog):
 
                 #TODO: grey out the dialog if the invoice is expired
 
-                break
+                return
+
+        #Fall through: apparently it's not in the list
+        #If this ever happens, I think it indicates a bug in the backend.
+        self.statusLabel.setText('Unknown (Invoice does not exist anymore?)')
 
