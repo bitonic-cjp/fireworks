@@ -160,7 +160,11 @@ class Payments(QWidget):
 
 
     def update(self):
-        payments = self.backend.getPayments()
+        try:
+            payments = self.backend.getPayments()
+        except self.backend.NotConnected:
+            #TODO: erase and grey-out
+            return
         self.paymentTable.updatePayments(payments)
 
 

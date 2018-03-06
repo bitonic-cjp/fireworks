@@ -17,7 +17,7 @@
 
 import copy
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QPushButton, QTableView, QHeaderView, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QPushButton, QTableView, QHeaderView, QSizePolicy, QMessageBox
 from PyQt5.QtCore import Qt, QAbstractTableModel
 
 from . import updatesignal
@@ -149,7 +149,11 @@ class Invoices(QWidget):
 
 
     def update(self):
-        invoices = self.backend.getInvoices()
+        try:
+            invoices = self.backend.getInvoices()
+        except self.backend.NotConnected:
+            #TODO: erase and grey-out
+            return
         self.invoiceTable.updateInvoices(invoices)
 
 
@@ -173,7 +177,14 @@ class Invoices(QWidget):
 
 
     def onCreateNewInvoice(self):
-        dialog = NewInvoiceDialog(self, self.backend)
+        try:
+            dialog = NewInvoiceDialog(self, self.backend)
+        except self.backend.NotConnected:
+            QMessageBox.critical(self, 'Failed to create a new invoice',
+                'Creating a new invoice failed: back-end not connected.'
+                )
+            return
+
         if(dialog.exec() != dialog.Accepted):
             return
 

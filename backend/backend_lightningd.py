@@ -55,10 +55,21 @@ class Payment(Struct):
     paymentPreimage = None #str
 
 
+def translateRPCExceptions(method):
+    def newMethod(self, *args, **kwargs):
+        try:
+            return method(self, *args, **kwargs)
+        except (ConnectionRefusedError, ConnectionResetError) as e:
+            raise self.NotConnected(str(e))
+    return newMethod
 
 class Backend:
     class CommandFailed(Exception):
         pass
+
+    class NotConnected(Exception):
+        pass
+
 
     def __init__(self, config):
         logging.info('Using Lightningd back-end')
@@ -67,19 +78,31 @@ class Backend:
         lightningDir = os.path.abspath(lightningDir)
         socketFile = os.path.join(lightningDir, 'lightning-rpc')
         self.rpc = LightningRpc(socketFile)
-
-        #Cached:
-        self.nodeInfo = self.rpc.getinfo()
+        self.initNodeInfo()
 
 
     def getBackendName(self):
+        if self.nodeInfo is None and not self.initNodeInfo():
+            raise self.NotConnected()
         return 'Lightningd ' + self.nodeInfo['version']
 
 
+    def initNodeInfo(self):
+        #Cached:
+        try:
+            self.nodeInfo = self.rpc.getinfo()
+        except (ConnectionRefusedError, ConnectionResetError):
+            self.nodeInfo = None
+            return False
+
+        return True
+
+
     def isConnected(self):
-        return True #TODO
+        return self.initNodeInfo()
 
 
+    @translateRPCExceptions
     def runCommand(self, cmd, *args):
         '''
         Arguments:
@@ -91,7 +114,7 @@ class Backend:
             The output of the command
         Exceptions:
             Backend.CommandFailed: the command failed
-            TBD (e.g. not connected?)
+            Backend.NotConnected: not connected to the backend
         '''
 
         #In this back-end, the format is "<name>=<JSON>" or "<name>=<str>"
@@ -124,8 +147,11 @@ class Backend:
         Returns: str
             BIP-173 currency code
         Exceptions:
-            TBD (e.g. not connected?)
+            Backend.NotConnected: not connected to the backend
         '''
+        if self.nodeInfo is None and not self.initNodeInfo():
+            raise self.NotConnected()
+
         network = self.nodeInfo['network']
         return \
         {
@@ -138,6 +164,7 @@ class Backend:
         }[network]
 
 
+    @translateRPCExceptions
     def getNonChannelFunds(self):
         '''
         Arguments:
@@ -150,7 +177,7 @@ class Backend:
                 value (in mSatoshi)
                 is confirmed?
         Exceptions:
-            TBD (e.g. not connected?)
+            Backend.NotConnected: not connected to the backend
         '''
         outputs = self.rpc.listfunds()['outputs']
         ret = {}
@@ -160,6 +187,7 @@ class Backend:
         return ret
 
 
+    @translateRPCExceptions
     def getChannelFunds(self):
         '''
         Arguments:
@@ -174,7 +202,7 @@ class Backend:
                 locked funds, outgoing (mSatoshi)
                 peer's funds (mSatoshi)
         Exceptions:
-            TBD (e.g. not connected?)
+            Backend.NotConnected: not connected to the backend
         '''
         channels = self.rpc.listfunds()['channels']
         ret = {}
@@ -190,13 +218,14 @@ class Backend:
         return ret
 
 
+    @translateRPCExceptions
     def getInvoices(self):
         '''
         Arguments:
         Returns: list(Invoice)
             The invoices.
         Exceptions:
-            TBD (e.g. not connected?)
+            Backend.NotConnected: not connected to the backend
         '''
         invoices = self.rpc.listinvoices()['invoices']
         currency = self.getNativeCurrency()
@@ -213,13 +242,14 @@ class Backend:
         ]
 
 
+    @translateRPCExceptions
     def getPayments(self):
         '''
         Arguments:
         Returns: list(Payment)
             The payments.
         Exceptions:
-            TBD (e.g. not connected?)
+            Backend.NotConnected: not connected to the backend
         '''
         payments = self.rpc.listpayments()['payments']
         currency = self.getNativeCurrency()
@@ -239,6 +269,7 @@ class Backend:
         ]
 
 
+    @translateRPCExceptions
     def makeNewInvoice(self, label, description, amount, expiry):
         '''
         Arguments:
@@ -253,7 +284,7 @@ class Backend:
             The expiration time (UNIX timestamp)
         Exceptions:
             Backend.CommandFailed: the command failed (e.g. label already exists)
-            TBD (e.g. not connected?)
+            Backend.NotConnected: not connected to the backend
         '''
         try:
             data = self.rpc.invoice(
@@ -268,6 +299,7 @@ class Backend:
         return (data['bolt11'], data['expires_at'])
 
 
+    @translateRPCExceptions
     def decodeInvoiceData(self, bolt11):
         '''
         Arguments:
@@ -275,7 +307,7 @@ class Backend:
         Returns: InvoiceData
         Exceptions:
             Backend.CommandFailed: the command failed (e.g. invalid bolt11 code)
-            TBD (e.g. not connected?)
+            Backend.NotConnected: not connected to the backend
         '''
         try:
             result = self.rpc.decodepay(bolt11=bolt11)
@@ -298,6 +330,7 @@ class Backend:
             )
 
 
+    @translateRPCExceptions
     def pay(self, bolt11):
         '''
         Arguments:
@@ -305,7 +338,7 @@ class Backend:
         Returns: None
         Exceptions:
             Backend.CommandFailed: the command failed (e.g. invalid bolt11 code)
-            TBD (e.g. not connected?)
+            Backend.NotConnected: not connected to the backend
         '''
         try:
             #TODO: support for the other arguments of pay

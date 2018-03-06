@@ -95,9 +95,13 @@ class MainWindow(QMainWindow):
 
 
     def update(self):
-        status = 'Not connected'
         if self.backend.isConnected():
-            status = 'Connected to %s' % self.backend.getBackendName()
+            try:
+                status = 'Connected to %s' % self.backend.getBackendName()
+            except self.backend.NotConnected:
+                status = 'Not connected'
+        else:
+            status = 'Not connected'
 
         self.statusLabel.setText(status)
 

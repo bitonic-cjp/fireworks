@@ -118,9 +118,13 @@ class Overview(QWidget):
 
 
     def update(self):
-        nonChannelFunds = self.backend.getNonChannelFunds()
-        channelFunds = self.backend.getChannelFunds()
-        currency = self.backend.getNativeCurrency()
+        try:
+            nonChannelFunds = self.backend.getNonChannelFunds()
+            channelFunds = self.backend.getChannelFunds()
+            currency = self.backend.getNativeCurrency()
+        except self.backend.NotConnected:
+            #TODO: erase all amounts and grey-out
+            return
 
         confirmed   = sum(x[0] for x in nonChannelFunds.values() if x[1])
         unconfirmed = sum(x[0] for x in nonChannelFunds.values() if not x[1])

@@ -90,6 +90,11 @@ class NewPaymentDialog(QDialog):
             invoiceData = self.backend.decodeInvoiceData(self.bolt11)
         except self.backend.CommandFailed:
             self.setInvalidInvoice()
+        except self.backend.NotConnected:
+            QMessageBox.critical(self, 'Failed to perform the payment',
+                'Error: back-end not connected.'
+                )
+            self.reject()
         else:
             self.setValidInvoice(invoiceData)
 
@@ -136,5 +141,9 @@ class NewPaymentDialog(QDialog):
             QMessageBox.critical(self, 'Failed to perform the payment',
                 'Performing the payment failed with the following error message:\n\n'
                  + str(e)
+                )
+        except self.backend.NotConnected:
+            QMessageBox.critical(self, 'Failed to perform the payment',
+                'Performing the payment failed: back-end not connected.'
                 )
 

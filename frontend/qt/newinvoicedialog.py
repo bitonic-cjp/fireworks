@@ -77,4 +77,8 @@ class NewInvoiceDialog(QDialog):
                 'Creating a new invoice failed with the following error message:\n\n'
                  + str(e)
                 )
+        except self.backend.NotConnected:
+            QMessageBox.critical(self, 'Failed to create a new invoice',
+                'Creating a new invoice failed: back-end not connected.'
+                )
 
