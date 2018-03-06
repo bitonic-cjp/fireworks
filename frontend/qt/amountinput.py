@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QLineEdit
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QComboBox, QLineEdit
 
 from .. import formatting
 from utils.currencies import currencyInfo
@@ -36,15 +36,19 @@ class AmountInput(QWidget):
         self.input.setText('0.00000000 000')
         layout.addWidget(self.input, 1)
 
-        self.unit = QLabel(
-            info.defaultUnit, #TODO: default unit setting; drop-down for units
-            self) 
+        units = [(k,v) for k,v in info.multipliers.items()]
+        units.sort(key = lambda x: x[1])
+        units = [x[0] for x in units]
+        self.unit = QComboBox(self)
+        for i in range(len(units)):
+            self.unit.insertItem(i, units[i])
+        self.unit.setCurrentIndex(units.index(info.defaultUnit))
         layout.addWidget(self.unit, 0)
 
         self.setLayout(layout)
 
 
     def getValue(self):
-        amountText = self.input.text() + ' ' + self.unit.text()
+        amountText = self.input.text() + ' ' + self.unit.currentText()
         return formatting.unformatAmount(amountText, self.currency)
 
