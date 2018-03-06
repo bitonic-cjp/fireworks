@@ -43,7 +43,7 @@ def formatTimestamp(timestamp):
     return dt.strftime('%c (%Z)')
 
 
-def formatAmount(amount, currency='bc', unit=None): #TODO: assume no default!
+def formatAmount(amount, currency, unit=None):
     '''
     Arguments:
         amount: int
@@ -89,7 +89,7 @@ def formatAmount(amount, currency='bc', unit=None): #TODO: assume no default!
     return '%s%d.%s' % (sign, amount, ret)
 
 
-def unformatAmount(text, currency='bc'): #TODO: assume no default!
+def unformatAmount(text, currency):
     '''
     Arguments:
         text: str
