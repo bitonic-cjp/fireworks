@@ -72,6 +72,14 @@ class Backend:
         self.nodeInfo = self.rpc.getinfo()
 
 
+    def getBackendName(self):
+        return 'Lightningd ' + self.nodeInfo['version']
+
+
+    def isConnected(self):
+        return True #TODO
+
+
     def runCommand(self, cmd, *args):
         '''
         Arguments:

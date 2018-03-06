@@ -15,12 +15,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QWidget, QMainWindow, QAction, QMessageBox, QVBoxLayout, QTabWidget
+from PyQt5.QtWidgets import QWidget, QMainWindow, QAction, QMessageBox, QVBoxLayout, QTabWidget, QStatusBar, QLabel
 
 from .console import Console
 from .overview import Overview
 from .invoices import Invoices
 from .payments import Payments
+from . import updatesignal
 
 
 
@@ -54,8 +55,15 @@ class MainWindow(QMainWindow):
     def __init__(self, config, backend):
         super().__init__()
 
+        self.backend = backend
+
         self.setWindowTitle('Fireworks')
         self.setGeometry(10, 10, 640, 480)
+
+        statusBar = QStatusBar(self)
+        self.setStatusBar(statusBar)
+        self.statusLabel = QLabel(statusBar)
+        statusBar.addWidget(self.statusLabel)
 
         tabWidget = TabWidget(self,
             [
@@ -81,7 +89,17 @@ class MainWindow(QMainWindow):
         aboutButton.triggered.connect(self.showAbout)
         helpMenu.addAction(aboutButton)
 
+        updatesignal.connect(self.update)
+
         self.show()
+
+
+    def update(self):
+        status = 'Not connected'
+        if self.backend.isConnected():
+            status = 'Connected to %s' % self.backend.getBackendName()
+
+        self.statusLabel.setText(status)
 
 
     def showAbout(self):
