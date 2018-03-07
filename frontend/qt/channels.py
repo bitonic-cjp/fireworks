@@ -15,10 +15,18 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QScrollArea, QSizePolicy, QFrame
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QScrollArea, QSizePolicy, QFrame, QPushButton
 from PyQt5.QtCore import Qt, QEvent
 
 from . import updatesignal
+
+
+
+class HLine(QFrame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setFrameShadow(QFrame.Sunken)
+        self.setFrameShape(QFrame.HLine)
 
 
 
@@ -29,11 +37,26 @@ class ChannelsInScroll(QWidget):
 
         layout = QGridLayout(self)
 
-        for x in range(2):
-            for y in range(100):
-                label = QLabel('Zomaar een niet zo heel erg lange tekst', self)
-                layout.addWidget(label, y, x)
+        #TODO: scale widget
 
+        newConnectionButton = QPushButton('Add a new connection', self)
+        layout.addWidget(newConnectionButton, 1, 1)
+
+        for c in range(3):
+            layout.addWidget(HLine(self),  2+4*c, 0, 1, 3)
+            label = QLabel('Name\nConnected', self)
+            label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            layout.addWidget(label,        3+4*c, 0, 2, 1)
+
+            button = QPushButton('Close', self)
+            button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            layout.addWidget(button,       3+4*c, 2)
+            button = QPushButton('Close', self)
+            button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            layout.addWidget(button,       4+4*c, 2)
+
+            button = QPushButton('New channel', self)
+            layout.addWidget(button,       5+4*c, 1)
 
         self.setLayout(layout)
 
