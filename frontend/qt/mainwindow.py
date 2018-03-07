@@ -21,6 +21,7 @@ from .console import Console
 from .overview import Overview
 from .invoices import Invoices
 from .payments import Payments
+from .channels import Channels
 from . import updatesignal
 
 
@@ -70,7 +71,7 @@ class MainWindow(QMainWindow):
             ('Overview', Overview(None, backend)),
             ('Receive' , Invoices(None, backend)),
             ('Send'    , Payments(None, backend)),
-            ('Channels', QWidget()),
+            ('Channels', Channels(None, backend)),
             ('Console' , Console(None, backend))
             ])
         self.setCentralWidget(tabWidget)
