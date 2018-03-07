@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QGridLayout, QLabel, QPla
 
 from . import updatesignal
 from .amountinput import AmountInput
+from .durationinput import DurationInput
 
 
 
@@ -43,7 +44,7 @@ class NewInvoiceDialog(QDialog):
         self.labelText = QLineEdit(invoiceLabel, self)
         self.descriptionText = QPlainTextEdit(self)
         self.amountText = AmountInput(self, self.backend.getNativeCurrency())
-        self.expiryText = QLineEdit(self) #TODO: custom widget
+        self.expiryText = DurationInput(self)
 
         layout.addWidget(self.labelText      , 0, 1)
         layout.addWidget(self.descriptionText, 1, 1)
@@ -68,7 +69,8 @@ class NewInvoiceDialog(QDialog):
                 label=self.labelText.text(),
                 description=self.descriptionText.toPlainText(),
                 amount=self.amountText.getValue(),
-                expiry=int(self.expiryText.text()))
+                expiry=self.expiryText.getValue()
+                )
             self.label = self.labelText.text()
             updatesignal.update()
         except self.backend.CommandFailed as e:
