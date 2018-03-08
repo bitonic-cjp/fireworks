@@ -55,6 +55,15 @@ class Payment(Struct):
     paymentPreimage = None #str
 
 
+class Peer(Struct):
+    peerID = None    #str
+    alias = None     #str
+    color = None     #str
+    connected = None #bool
+    channels = []    #list of (int,int,int,int)
+
+
+
 def translateRPCExceptions(method):
     def newMethod(self, *args, **kwargs):
         try:
@@ -215,6 +224,41 @@ class Backend:
             lockedOut = 0 #TODO
             theirs = total - ours - lockedIn - lockedOut
             ret[txID] = (peerID, ours, lockedIn, lockedOut, theirs)
+        return ret
+
+
+    @translateRPCExceptions
+    def getPeers(self):
+        '''
+        Arguments:
+        Returns: list(Peer)
+            The peer information.
+        Exceptions:
+            Backend.NotConnected: not connected to the backend
+        '''
+
+        peers = self.rpc.listpeers()['peers']
+
+        ret = []
+        for p in peers:
+            channels = []
+            if 'channels' in p:
+                for c in p['channels']:
+                    ours = c['msatoshi_to_us']
+                    total = c['msatoshi_total']
+                    lockedIn = 0 #TODO
+                    lockedOut = 0 #TODO
+                    theirs = total - ours - lockedIn - lockedOut
+                    channels.append((ours, lockedIn, lockedOut, theirs))
+            alias = p['alias'] if 'alias' in p else '(unknown)'
+            color = p['color'] if 'color' in p else 'ffffff'
+            ret.append(Peer(
+                peerID=p['id'],
+                alias=alias,
+                color=color,
+                connected=p['connected'],
+                channels=channels
+                ))
         return ret
 
 

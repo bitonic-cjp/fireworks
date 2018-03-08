@@ -35,36 +35,68 @@ class ChannelsInScroll(QWidget):
         super().__init__(parent)
         self.backend = backend
 
-        layout = QGridLayout(self)
+        self.peers = []
 
-        #TODO: scale widget
+        self.layout = QGridLayout(self)
+        self.setLayout(self.layout)
 
-        newConnectionButton = QPushButton('Add a new connection', self)
-        layout.addWidget(newConnectionButton, 1, 1)
-
-        for c in range(3):
-            layout.addWidget(HLine(self),  2+4*c, 0, 1, 3)
-            label = QLabel('Name\nConnected', self)
-            label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            layout.addWidget(label,        3+4*c, 0, 2, 1)
-
-            button = QPushButton('Close', self)
-            button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            layout.addWidget(button,       3+4*c, 2)
-            button = QPushButton('Close', self)
-            button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            layout.addWidget(button,       4+4*c, 2)
-
-            button = QPushButton('New channel', self)
-            layout.addWidget(button,       5+4*c, 1)
-
-        self.setLayout(layout)
+        self.constructWidgets()
 
         updatesignal.connect(self.update)
 
 
     def update(self):
-        pass #TODO
+        try:
+            newPeers = self.backend.getPeers()
+            if newPeers == self.peers:
+                return #no change - don't update
+            self.peers = newPeers
+            haveData = True
+        except self.backend.NotConnected:
+            self.peers = []
+            haveData = False
+
+        self.removeWidgets()
+        self.constructWidgets()
+        self.setEnabled(haveData)
+
+
+    def removeWidgets(self):
+        while True:
+            item = self.layout.takeAt(0)
+            if not item:
+                break
+            item.widget().deleteLater()
+
+
+    def constructWidgets(self):
+        #TODO: scale widget
+
+        #connect peer_id=... host=... port=...
+        newConnectionButton = QPushButton('Add a new connection', self)
+        self.layout.addWidget(newConnectionButton, 1, 1)
+
+        currentRow = 2
+
+        for peer in self.peers:
+            channels = peer.channels
+            connected = 'Connected' if peer.connected else 'Not connected'
+
+            self.layout.addWidget(HLine(self),  currentRow, 0, 1, 3)
+            currentRow += 1
+            label = QLabel('%s\n%s' % (peer.alias, connected), self)
+            label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            self.layout.addWidget(label,        currentRow, 0, 1+len(channels), 1)
+
+            for ourFunds,lockedIn,lockedOut,peerFunds in channels:
+                button = QPushButton('Close', self)
+                button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+                self.layout.addWidget(button,   currentRow, 2)
+                currentRow += 1
+
+            button = QPushButton('New channel', self)
+            self.layout.addWidget(button,       currentRow, 1)
+            currentRow += 1
 
 
 
