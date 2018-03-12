@@ -82,7 +82,7 @@ class Backend:
 
     def __init__(self, config):
         logging.info('Using Lightningd back-end')
-        lightningDir = config.getValue('lightningd', 'lightning-dir')
+        lightningDir = config.getValue('lightningd', 'dir')
         lightningDir = os.path.expanduser(lightningDir)
         lightningDir = os.path.abspath(lightningDir)
         socketFile = os.path.join(lightningDir, 'lightning-rpc')

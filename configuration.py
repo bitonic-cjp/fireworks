@@ -38,7 +38,7 @@ class Configuration:
             },
         'lightningd':
             {
-            'lightning-dir': '~/.lightning'
+            'dir': '~/.lightning'
             }
         }
 
