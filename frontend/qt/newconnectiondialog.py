@@ -50,6 +50,7 @@ class NewConnectionDialog(QDialog):
     def onAccepted(self):
         try:
             self.backend.connect(self.linkText.text())
+            updatesignal.update()
         except self.backend.CommandFailed as e:
             updatesignal.update()
             QMessageBox.critical(self, 'Failed to create a new connection',
