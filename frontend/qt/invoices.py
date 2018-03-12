@@ -214,8 +214,6 @@ class Invoices(QWidget):
         if None in (bolt11, expirationTime, label):
             return
 
-        print(label, bolt11, expirationTime)
-
         dialog = ShowInvoiceDialog(self, self.backend, label, bolt11)
         dialog.exec()
 
