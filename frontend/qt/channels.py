@@ -21,6 +21,7 @@ from PyQt5.QtCore import Qt, QEvent
 
 from . import updatesignal
 from .newconnectiondialog import NewConnectionDialog
+from .newchanneldialog import NewChannelDialog
 
 
 
@@ -138,31 +139,50 @@ class ChannelsInScroll(QWidget):
             channels = peer.channels
             connected = 'Connected' if peer.connected else 'Not connected'
 
-            self.layout.addWidget(HLine(self),  currentRow, 0, 1, 3)
+            self.layout.addWidget(HLine(self), currentRow, 0, 1, 3)
             currentRow += 1
             label = QLabel('%s\n%s' % (peer.alias, connected), self)
             label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            self.layout.addWidget(label,        currentRow, 0, 1+len(channels), 1)
+            self.layout.addWidget(label, currentRow, 0, 1+len(channels), 1)
 
             for amounts in channels:
                 bar = BalanceBar(self)
                 bar.setAmounts(amounts)
                 bar.setMaxAmount(maxAmount)
-                self.layout.addWidget(bar,   currentRow, 1)
+                self.layout.addWidget(bar, currentRow, 1)
 
                 button = QPushButton('Close', self)
                 button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                self.layout.addWidget(button,   currentRow, 2)
+                self.layout.addWidget(button, currentRow, 2)
 
                 currentRow += 1
 
+            def makeNewChannelHandler(self, peer):
+                def newChannelHandler():
+                    return self.onNewChannel(peer)
+                return newChannelHandler
             button = QPushButton('New channel', self)
-            self.layout.addWidget(button,       currentRow, 1)
+            button.clicked.connect(makeNewChannelHandler(self, peer))
+            self.layout.addWidget(button, currentRow, 1)
             currentRow += 1
 
 
     def onNewConnection(self):
         dialog = NewConnectionDialog(self, self.backend)
+        if(dialog.exec() != dialog.Accepted):
+            return
+
+
+    def onNewChannel(self, peer):
+        peerID = peer.peerID
+        alias = peer.alias
+        print('NEW CHANNEL: ', alias, peerID) #TODO
+        try:
+            dialog = NewChannelDialog(self, self.backend, peerID, alias)
+        except self.backend.NotConnected:
+            QMessageBox.critical(self, 'Failed to create a new channel',
+                'Creating a new channel failed: back-end not connected.'
+                )
         if(dialog.exec() != dialog.Accepted):
             return
 

@@ -408,6 +408,24 @@ class Backend:
             raise Backend.CommandFailed(str(e))
 
 
+    @translateRPCExceptions
+    def makeChannel(self, peerID, amount):
+        '''
+        Arguments:
+            peerID: str
+            amount: int
+                mSatoshi
+        Returns: None
+        Exceptions:
+            Backend.CommandFailed: the command failed
+            Backend.NotConnected: not connected to the backend
+        '''
+        try:
+            self.rpc.fundchannel(peerID, amount // 1000)
+        except ValueError as e:
+            raise Backend.CommandFailed(str(e))
+
+
 
 logging.info('Loaded Lightningd back-end module')
 
