@@ -20,6 +20,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QEvent
 
 from . import updatesignal
+from .newconnectiondialog import NewConnectionDialog
 
 
 
@@ -127,8 +128,8 @@ class ChannelsInScroll(QWidget):
 
         #TODO: scale widget
 
-        #connect peer_id=... host=... port=...
         newConnectionButton = QPushButton('Add a new connection', self)
+        newConnectionButton.clicked.connect(self.onNewConnection)
         self.layout.addWidget(newConnectionButton, 1, 1)
 
         currentRow = 2
@@ -158,6 +159,12 @@ class ChannelsInScroll(QWidget):
             button = QPushButton('New channel', self)
             self.layout.addWidget(button,       currentRow, 1)
             currentRow += 1
+
+
+    def onNewConnection(self):
+        dialog = NewConnectionDialog(self, self.backend)
+        if(dialog.exec() != dialog.Accepted):
+            return
 
 
 

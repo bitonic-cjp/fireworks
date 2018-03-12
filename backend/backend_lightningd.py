@@ -391,6 +391,23 @@ class Backend:
             raise Backend.CommandFailed(str(e))
 
 
+    @translateRPCExceptions
+    def connect(self, link):
+        '''
+        Arguments:
+            link: str
+                id@host[:port]
+        Returns: None
+        Exceptions:
+            Backend.CommandFailed: the command failed (e.g. invalid link, or connection failure)
+            Backend.NotConnected: not connected to the backend
+        '''
+        try:
+            self.rpc.connect(link)
+        except ValueError as e:
+            raise Backend.CommandFailed(str(e))
+
+
 
 logging.info('Loaded Lightningd back-end module')
 
