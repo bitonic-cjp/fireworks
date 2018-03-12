@@ -16,6 +16,7 @@
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QScrollArea, QSizePolicy, QFrame, QPushButton
+from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QEvent
 
 from . import updatesignal
@@ -27,6 +28,52 @@ class HLine(QFrame):
         super().__init__(parent)
         self.setFrameShadow(QFrame.Sunken)
         self.setFrameShape(QFrame.HLine)
+
+
+
+class BalanceBar(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.amounts = (0,0,0,0)
+        self.maxAmount = 1.0
+
+
+    def setAmounts(self, amounts):
+        self.amounts = amounts
+
+
+    def setMaxAmount(self, maxAmount):
+        self.maxAmount = maxAmount
+
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+
+        width = self.width()
+        height = self.height()
+
+        painter.setPen(Qt.black)
+        painter.drawRect(0,0,width-1,height-1)
+
+        ours, lockedIn, lockedOut, theirs = self.amounts
+
+        scaleFactor = 0.5 * (width-4) / self.maxAmount
+        ours      *= scaleFactor
+        lockedIn  *= scaleFactor
+        lockedOut *= scaleFactor
+        theirs    *= scaleFactor
+
+        painter.translate(width/2, 0)
+
+        #TODO: draw lockedIn, lockedOut amounts
+
+        painter.setPen(Qt.darkGreen)
+        painter.setBrush(Qt.darkGreen)
+        painter.drawRect(-ours-1,1,ours,height-3)
+
+        painter.setPen(Qt.red)
+        painter.setBrush(Qt.red)
+        painter.drawRect(1,1,theirs,height-3)
 
 
 
@@ -70,6 +117,14 @@ class ChannelsInScroll(QWidget):
 
 
     def constructWidgets(self):
+        #Determine the scale
+        maxAmount = 1000 #msatoshi; Never less than this
+        for peer in self.peers:
+            for ours, lockedIn, lockedOut, theirs in peer.channels:
+                oursTotal   = ours + lockedOut
+                theirsTotal = theirs + lockedIn
+                maxAmount = max(maxAmount, oursTotal, theirsTotal)
+
         #TODO: scale widget
 
         #connect peer_id=... host=... port=...
@@ -88,10 +143,16 @@ class ChannelsInScroll(QWidget):
             label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             self.layout.addWidget(label,        currentRow, 0, 1+len(channels), 1)
 
-            for ourFunds,lockedIn,lockedOut,peerFunds in channels:
+            for amounts in channels:
+                bar = BalanceBar(self)
+                bar.setAmounts(amounts)
+                bar.setMaxAmount(maxAmount)
+                self.layout.addWidget(bar,   currentRow, 1)
+
                 button = QPushButton('Close', self)
                 button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
                 self.layout.addWidget(button,   currentRow, 2)
+
                 currentRow += 1
 
             button = QPushButton('New channel', self)
