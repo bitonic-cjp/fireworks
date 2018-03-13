@@ -96,6 +96,7 @@ class ChannelsInScroll(QWidget):
         self.backend = backend
 
         self.peers = []
+        self.nodeLink = ''
 
         self.layout = QGridLayout(self)
         self.setLayout(self.layout)
@@ -107,12 +108,14 @@ class ChannelsInScroll(QWidget):
 
     def update(self):
         try:
+            self.nodeLink = self.backend.getNodeLink()
             newPeers = self.backend.getPeers()
             if newPeers == self.peers:
                 return #no change - don't update
             self.peers = newPeers
             haveData = True
         except self.backend.NotConnected:
+            self.nodeLink = ''
             self.peers = []
             haveData = False
 
@@ -141,11 +144,15 @@ class ChannelsInScroll(QWidget):
 
         #TODO: scale widget
 
-        newConnectionButton = QPushButton('Add a new connection', self)
-        newConnectionButton.clicked.connect(self.onNewConnection)
-        self.layout.addWidget(newConnectionButton, 1, 1)
+        label = QLabel('Link to this node:\n' + self.nodeLink, self)
+        label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        self.layout.addWidget(label, 1, 1)
 
-        currentRow = 2
+        newConnectionButton = QPushButton('Connect to another node', self)
+        newConnectionButton.clicked.connect(self.onNewConnection)
+        self.layout.addWidget(newConnectionButton, 2, 1)
+
+        currentRow = 3
 
         for peer in self.peers:
             channels = peer.channels

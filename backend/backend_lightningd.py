@@ -184,6 +184,24 @@ class Backend:
 
 
     @translateRPCExceptions
+    def getNodeLink(self):
+        '''
+        Arguments:
+        Returns: str
+        Exceptions:
+            Backend.NotConnected: not connected to the backend
+        '''
+        if self.nodeInfo is None and not self.initNodeInfo():
+            raise self.NotConnected()
+
+        address = '(unknown hostname)'
+        if self.nodeInfo['address']:
+            address = self.nodeInfo['address'][0]
+
+        return '%s@%s:%s' % (self.nodeInfo['id'], address, self.nodeInfo['port'])
+
+
+    @translateRPCExceptions
     def getNonChannelFunds(self):
         '''
         Arguments:
