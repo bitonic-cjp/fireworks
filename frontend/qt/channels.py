@@ -160,13 +160,20 @@ class ChannelsInScroll(QWidget):
                 label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
                 self.layout.addWidget(label, currentRow, 2)
 
+                def makeCloseChannelHandler(self, peer, fundingTxID):
+                    def closeChannelHandler():
+                        return self.onCloseChannel(peer, fundingTxID)
+                    return closeChannelHandler
                 button = QPushButton('Close', self)
+                button.clicked.connect(makeCloseChannelHandler(
+                    self, peer, c.fundingTxID
+                    ))
                 button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
                 self.layout.addWidget(button, currentRow, 3)
 
                 currentRow += 1
 
-            def makeNewChannelHandler(self, peer):
+            def makeNewChannelHandler(self, peer, ):
                 def newChannelHandler():
                     return self.onNewChannel(peer)
                 return newChannelHandler
@@ -185,7 +192,6 @@ class ChannelsInScroll(QWidget):
     def onNewChannel(self, peer):
         peerID = peer.peerID
         alias = peer.alias
-        print('NEW CHANNEL: ', alias, peerID) #TODO
         try:
             dialog = NewChannelDialog(self, self.backend, peerID, alias)
         except self.backend.NotConnected:
@@ -194,6 +200,24 @@ class ChannelsInScroll(QWidget):
                 )
         if(dialog.exec() != dialog.Accepted):
             return
+
+
+    def onCloseChannel(self, peer, fundingTxID):
+        #TODO: ask the user for confirmation
+        #alias = peer.alias
+
+        try:
+            self.backend.closeChannel(fundingTxID)
+            updatesignal.update()
+        except self.backend.CommandFailed as e:
+            QMessageBox.critical(self, 'Failed to close the channel',
+                'Closing the channel failed with the following error message:\n\n'
+                 + str(e)
+                )
+        except self.backend.NotConnected:
+            QMessageBox.critical(self, 'Failed to close the channel',
+                'Closing the channel failed: back-end not connected.'
+                )
 
 
 

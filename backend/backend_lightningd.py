@@ -58,6 +58,7 @@ class Payment(Struct):
 class Channel(Struct):
     state          = None #str
     operational    = None #bool
+    fundingTxID    = None #str
     ownFunds       = None #int, mSatoshi
     lockedIncoming = None #int, mSatoshi
     lockedOutgoing = None #int, mSatoshi
@@ -226,6 +227,7 @@ class Backend:
             lockedOut = 0 #TODO
             theirs = total - ours - lockedIn - lockedOut
             ret[txID] = Channel(
+                fundingTxID = txID,
                 ownFunds = ours,
                 lockedIncoming = lockedIn,
                 lockedOutgoing = lockedOut,
@@ -272,9 +274,11 @@ class Backend:
                     lockedIn = 0 #TODO
                     lockedOut = 0 #TODO
                     theirs = total - ours - lockedIn - lockedOut
+
                     channels.append(Channel(
                         state=state,
                         operational=operational,
+                        fundingTxID=c['funding_txid'],
                         ownFunds=ours,
                         lockedIncoming=lockedIn,
                         lockedOutgoing=lockedOut,
@@ -452,6 +456,34 @@ class Backend:
         '''
         try:
             self.rpc.fundchannel(peerID, amount // 1000)
+        except ValueError as e:
+            raise Backend.CommandFailed(str(e))
+
+
+    @translateRPCExceptions
+    def closeChannel(self, fundingTxID):
+        '''
+        Arguments:
+            fundingTxID: str
+        Returns: None
+        Exceptions:
+            Backend.CommandFailed: the command failed
+            Backend.NotConnected: not connected to the backend
+        '''
+        try:
+            peerID = None
+            for p in self.rpc.listpeers()['peers']:
+                txIDs = []
+                if 'channels' in p:
+                    txIDs = [c['funding_txid'] for c in p['channels']]
+                    if fundingTxID in txIDs:
+                        peerID = p['id']
+                        break
+            if peerID is None:
+                raise Backend.CommandFailed(
+                    'Funding transaction ID not found')
+
+            self.rpc.close(peerID)
         except ValueError as e:
             raise Backend.CommandFailed(str(e))
 
