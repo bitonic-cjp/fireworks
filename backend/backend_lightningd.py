@@ -55,12 +55,21 @@ class Payment(Struct):
     paymentPreimage = None #str
 
 
+class Channel(Struct):
+    state          = None #str
+    operational    = None #bool
+    ownFunds       = None #int, mSatoshi
+    lockedIncoming = None #int, mSatoshi
+    lockedOutgoing = None #int, mSatoshi
+    peerFunds      = None #int, mSatoshi
+
+
 class Peer(Struct):
     peerID = None    #str
     alias = None     #str
     color = None     #str
     connected = None #bool
-    channels = []    #list of (int,int,int,int)
+    channels = []    #list of Channel
 
 
 
@@ -200,30 +209,28 @@ class Backend:
     def getChannelFunds(self):
         '''
         Arguments:
-        Returns: dict(str->tuple(str,int,int,int,int))
+        Returns: dict(str->Channel)
             The channel funds.
             Each key consists of:
                 funding txID
-            Each value consists of:
-                peer nodeID
-                our funds (mSatoshi)
-                locked funds, incoming (mSatoshi)
-                locked funds, outgoing (mSatoshi)
-                peer's funds (mSatoshi)
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
         channels = self.rpc.listfunds()['channels']
         ret = {}
         for c in channels:
-            peerID = c['peer_id']
             txID = c['funding_txid']
             ours =  1000*c['channel_sat']       #TODO: actual resolution
             total = 1000*c['channel_total_sat'] #TODO: actual resolution
             lockedIn = 0 #TODO
             lockedOut = 0 #TODO
             theirs = total - ours - lockedIn - lockedOut
-            ret[txID] = (peerID, ours, lockedIn, lockedOut, theirs)
+            ret[txID] = Channel(
+                ownFunds = ours,
+                lockedIncoming = lockedIn,
+                lockedOutgoing = lockedOut,
+                peerFunds = theirs
+                )
         return ret
 
 
@@ -244,12 +251,35 @@ class Backend:
             channels = []
             if 'channels' in p:
                 for c in p['channels']:
+                    try:
+                        state = \
+                        {
+                        'OPENINGD'                : 'opening',
+                        'CHANNELD_AWAITING_LOCKIN': 'opened; waiting for confirmations',
+                        'CHANNELD_NORMAL'         : 'normal',
+                        'CHANNELD_SHUTTING_DOWN'  : 'mutual closing; waiting for transactions',
+                        'CLOSINGD_SIGEXCHANGE'    : 'mutual closing; negotiating tx fee',
+                        'CLOSINGD_COMPLETE'       : 'closed; waiting for confirmations',
+                        'FUNDING_SPEND_SEEN'      : 'Spend of funding tx was seen',
+                        'ONCHAIN'                 : 'tracking on-chain closing'
+                        }[c['state']]
+                    except KeyError:
+                        state = c['state']
+                    operational = c['state'] == 'CHANNELD_NORMAL'
+
                     ours = c['msatoshi_to_us']
                     total = c['msatoshi_total']
                     lockedIn = 0 #TODO
                     lockedOut = 0 #TODO
                     theirs = total - ours - lockedIn - lockedOut
-                    channels.append((ours, lockedIn, lockedOut, theirs))
+                    channels.append(Channel(
+                        state=state,
+                        operational=operational,
+                        ownFunds=ours,
+                        lockedIncoming=lockedIn,
+                        lockedOutgoing=lockedOut,
+                        peerFunds=theirs
+                        ))
             alias = p['alias'] if 'alias' in p else '(unknown)'
             color = p['color'] if 'color' in p else 'ffffff'
             ret.append(Peer(

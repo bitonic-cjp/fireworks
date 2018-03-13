@@ -36,12 +36,12 @@ class HLine(QFrame):
 class BalanceBar(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        self.amounts = (0,0,0,0)
+        self.channelData = None
         self.maxAmount = 1.0
 
 
-    def setAmounts(self, amounts):
-        self.amounts = amounts
+    def setChannelData(self, channelData):
+        self.channelData = channelData
 
 
     def setMaxAmount(self, maxAmount):
@@ -57,7 +57,12 @@ class BalanceBar(QWidget):
         painter.setPen(Qt.black)
         painter.drawRect(0,0,width-1,height-1)
 
-        ours, lockedIn, lockedOut, theirs = self.amounts
+        if self.channelData is None:
+            return
+        ours      = self.channelData.ownFunds
+        lockedIn  = self.channelData.lockedIncoming
+        lockedOut = self.channelData.lockedOutgoing
+        theirs    = self.channelData.peerFunds
 
         scaleFactor = 0.5 * (width-4) / self.maxAmount
         ours      *= scaleFactor
@@ -122,9 +127,9 @@ class ChannelsInScroll(QWidget):
         #Determine the scale
         maxAmount = 1000 #msatoshi; Never less than this
         for peer in self.peers:
-            for ours, lockedIn, lockedOut, theirs in peer.channels:
-                oursTotal   = ours + lockedOut
-                theirsTotal = theirs + lockedIn
+            for c in peer.channels:
+                oursTotal   = c.ownFunds + c.lockedOutgoing
+                theirsTotal = c.peerFunds + c.lockedIncoming
                 maxAmount = max(maxAmount, oursTotal, theirsTotal)
 
         #TODO: scale widget
@@ -145,15 +150,19 @@ class ChannelsInScroll(QWidget):
             label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             self.layout.addWidget(label, currentRow, 0, 1+len(channels), 1)
 
-            for amounts in channels:
+            for c in channels:
                 bar = BalanceBar(self)
-                bar.setAmounts(amounts)
+                bar.setChannelData(c)
                 bar.setMaxAmount(maxAmount)
                 self.layout.addWidget(bar, currentRow, 1)
 
+                label = QLabel('State: ' + c.state, self)
+                label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+                self.layout.addWidget(label, currentRow, 2)
+
                 button = QPushButton('Close', self)
                 button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                self.layout.addWidget(button, currentRow, 2)
+                self.layout.addWidget(button, currentRow, 3)
 
                 currentRow += 1
 
