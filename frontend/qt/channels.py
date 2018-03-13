@@ -136,7 +136,8 @@ class ChannelsInScroll(QWidget):
             for c in peer.channels:
                 oursTotal   = c.ownFunds + c.lockedOutgoing
                 theirsTotal = c.peerFunds + c.lockedIncoming
-                maxAmount = max(maxAmount, oursTotal, theirsTotal)
+                capacity = oursTotal + theirsTotal
+                maxAmount = max(maxAmount, capacity)
 
         #TODO: scale widget
 
