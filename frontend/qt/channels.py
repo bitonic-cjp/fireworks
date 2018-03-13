@@ -158,7 +158,7 @@ class ChannelsInScroll(QWidget):
             channels = peer.channels
             connected = 'Connected' if peer.connected else 'Not connected'
 
-            self.layout.addWidget(HLine(self), currentRow, 0, 1, 3)
+            self.layout.addWidget(HLine(self), currentRow, 0, 1, 4)
             currentRow += 1
             label = QLabel('%s\n%s' % (peer.alias, connected), self)
             label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
