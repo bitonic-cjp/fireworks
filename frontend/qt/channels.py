@@ -51,10 +51,16 @@ class BalanceBar(QWidget):
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
 
+        palette = self.style().standardPalette()
+        if self.isEnabled():
+            palette.setCurrentColorGroup(QtGui.QPalette.Active)
+        else:
+            palette.setCurrentColorGroup(QtGui.QPalette.Disabled)
+
         width = self.width()
         height = self.height()
 
-        painter.setPen(Qt.black)
+        painter.setPen(palette.color(QtGui.QPalette.WindowText))
         painter.drawRect(0,0,width-1,height-1)
 
         if self.channelData is None:
@@ -148,16 +154,19 @@ class ChannelsInScroll(QWidget):
             currentRow += 1
             label = QLabel('%s\n%s' % (peer.alias, connected), self)
             label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            label.setEnabled(peer.connected)
             self.layout.addWidget(label, currentRow, 0, 1+len(channels), 1)
 
             for c in channels:
                 bar = BalanceBar(self)
                 bar.setChannelData(c)
                 bar.setMaxAmount(maxAmount)
+                bar.setEnabled(c.operational)
                 self.layout.addWidget(bar, currentRow, 1)
 
                 label = QLabel('State: ' + c.state, self)
                 label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+                label.setEnabled(c.operational)
                 self.layout.addWidget(label, currentRow, 2)
 
                 def makeCloseChannelHandler(self, peer, fundingTxID):
@@ -169,6 +178,7 @@ class ChannelsInScroll(QWidget):
                     self, peer, c.fundingTxID
                     ))
                 button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+                button.setEnabled(c.operational)
                 self.layout.addWidget(button, currentRow, 3)
 
                 currentRow += 1
@@ -179,6 +189,7 @@ class ChannelsInScroll(QWidget):
                 return newChannelHandler
             button = QPushButton('New channel', self)
             button.clicked.connect(makeNewChannelHandler(self, peer))
+            button.setEnabled(peer.connected)
             self.layout.addWidget(button, currentRow, 1)
             currentRow += 1
 
