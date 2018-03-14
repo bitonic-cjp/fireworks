@@ -39,7 +39,11 @@ class Configuration:
         'lightningd':
             {
             'dir': '~/.lightning'
-            }
+            },
+        'core':
+            {
+            'loglevel': 'info'
+            },
         }
 
 

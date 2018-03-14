@@ -37,10 +37,18 @@ def getBackendModule(name):
 
 
 config = configuration.Configuration()
-#TODO: get log level from config:
+
+logLevel = \
+{
+'critical': logging.CRITICAL,
+'error'   : logging.ERROR,
+'warning' : logging.WARNING,
+'info'    : logging.INFO,
+'debug'   : logging.DEBUG
+}[config.getValue('core', 'loglevel')]
 logging.basicConfig(
     format='%(asctime)s %(levelname)s: %(message)s',
-    level=logging.DEBUG
+    level=logLevel
     )
 
 backendModule  = getBackendModule(config.getValue('modules', 'backend'))
