@@ -15,10 +15,11 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QGridLayout, QLabel, QPlainTextEdit, QFrame, QMessageBox
+from PyQt5.QtWidgets import QLabel, QPlainTextEdit, QFrame, QMessageBox, QDialogButtonBox
 
 from .. import formatting
 from . import updatesignal
+from .genericdialog import GenericDialog
 
 
 
@@ -30,34 +31,22 @@ class HLine(QFrame):
 
 
 
-class NewPaymentDialog(QDialog):
+class NewPaymentDialog(GenericDialog):
     def __init__(self, parent, backend):
-        super().__init__(parent)
+        super().__init__(parent, backend)
         self.backend = backend
 
         self.bolt11 = None
 
         self.setWindowTitle('Perform a new payment')
-
-        layout = QGridLayout()
-
-        layout.addWidget(QLabel('Invoice code:', self), 0, 0)
+        self.setErrorMessage('Failed to perform the payment')
 
         self.bolt11Text = QPlainTextEdit(self)
         self.bolt11Text.textChanged.connect(self.onBolt11Changed)
-        layout.addWidget(self.bolt11Text, 0, 1)
 
-        layout.addWidget(HLine(self), 1, 0, 1, 2)
+        self.addRow('Invoice code:', self.bolt11Text)
 
-        self.labels = [
-            'Amount:',
-            'Description:',
-            'Creation time:',
-            'Expiration time:',
-            'To:']
-        self.labels = [QLabel(txt, self) for txt in self.labels]
-        for i, label in enumerate(self.labels):
-            layout.addWidget(label, i+2, 0)
+        self.addWidget(HLine(self))
 
         self.amountLabel = QLabel(self)
         self.descriptionLabel = QLabel(self)
@@ -65,23 +54,13 @@ class NewPaymentDialog(QDialog):
         self.expirationTimeLabel = QLabel(self)
         self.payeeLabel = QLabel(self)
 
-        layout.addWidget(self.amountLabel        , 2, 1)
-        layout.addWidget(self.descriptionLabel   , 3, 1)
-        layout.addWidget(self.creationTimeLabel  , 4, 1)
-        layout.addWidget(self.expirationTimeLabel, 5, 1)
-        layout.addWidget(self.payeeLabel         , 6, 1)
-
-        self.dialogButtons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.dialogButtons.accepted.connect(self.accept)
-        self.dialogButtons.rejected.connect(self.reject)
-        layout.addWidget(self.dialogButtons, 7, 0, 1, 2)
-
-        self.setLayout(layout)
+        self.addRow('Amount:'         , self.amountLabel)
+        self.addRow('Description:'    , self.descriptionLabel)
+        self.addRow('Creation time:'  , self.creationTimeLabel)
+        self.addRow('Expiration time:', self.expirationTimeLabel)
+        self.addRow('To:'             , self.payeeLabel)
 
         self.setInvalidInvoice()
-
-        self.accepted.connect(self.onAccepted)
 
 
     def onBolt11Changed(self):
@@ -122,28 +101,17 @@ class NewPaymentDialog(QDialog):
 
 
     def setEnabled(self, value):
-        for label in self.labels:
+        for label in self.getLabels():
             label.setEnabled(value)
         self.amountLabel.setEnabled(value)
         self.descriptionLabel.setEnabled(value)
         self.creationTimeLabel.setEnabled(value)
         self.expirationTimeLabel.setEnabled(value)
         self.payeeLabel.setEnabled(value)
-        self.dialogButtons.button(QDialogButtonBox.Ok).setEnabled(value)
+        self.getDialogButtons().button(QDialogButtonBox.Ok).setEnabled(value)
 
 
-    def onAccepted(self):
-        try:
-            self.backend.pay(self.bolt11)
-            updatesignal.update()
-        except self.backend.CommandFailed as e:
-            updatesignal.update()
-            QMessageBox.critical(self, 'Failed to perform the payment',
-                'Performing the payment failed with the following error message:\n\n'
-                 + str(e)
-                )
-        except self.backend.NotConnected:
-            QMessageBox.critical(self, 'Failed to perform the payment',
-                'Performing the payment failed: back-end not connected.'
-                )
+    def doCommand(self):
+        self.backend.pay(self.bolt11)
+        updatesignal.update()
 

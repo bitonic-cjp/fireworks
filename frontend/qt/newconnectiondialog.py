@@ -15,50 +15,28 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QGridLayout, QLabel, QLineEdit, QMessageBox
+from PyQt5.QtWidgets import QLabel, QLineEdit
 
 from . import updatesignal
+from .genericdialog import GenericDialog
 
 
 
-class NewConnectionDialog(QDialog):
+class NewConnectionDialog(GenericDialog):
     def __init__(self, parent, backend):
-        super().__init__(parent)
+        super().__init__(parent, backend)
         self.backend = backend
 
         self.setWindowTitle('Create a new connection')
-
-        layout = QGridLayout()
-
-        layout.addWidget(QLabel('Format: id@host[:port]' , self), 0, 0, 1, 2)
-        layout.addWidget(QLabel('Link:', self), 1, 0)
+        self.setErrorMessage('Failed to create a new connection')
 
         self.linkText = QLineEdit(self)
-        layout.addWidget(self.linkText, 1, 1)
 
-        dialogButtons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        dialogButtons.accepted.connect(self.accept)
-        dialogButtons.rejected.connect(self.reject)
-        layout.addWidget(dialogButtons, 2, 0, 1, 2)
-
-        self.setLayout(layout)
-
-        self.accepted.connect(self.onAccepted)
+        self.addRow('Format:', QLabel('id@host[:port]', self))
+        self.addRow('Link:'  , self.linkText)
 
 
-    def onAccepted(self):
-        try:
-            self.backend.connect(self.linkText.text())
-            updatesignal.update()
-        except self.backend.CommandFailed as e:
-            updatesignal.update()
-            QMessageBox.critical(self, 'Failed to create a new connection',
-                'Creating a new connection failed with the following error message:\n\n'
-                 + str(e)
-                )
-        except self.backend.NotConnected:
-            QMessageBox.critical(self, 'Failed to create a new connection',
-                'Creating a new connection failed: back-end not connected.'
-                )
+    def doCommand(self):
+        self.backend.connect(self.linkText.text())
+        updatesignal.update()
 

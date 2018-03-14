@@ -15,17 +15,18 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QGridLayout, QLabel, QPlainTextEdit, QLineEdit, QMessageBox
+from PyQt5.QtWidgets import QPlainTextEdit, QLineEdit
 
 from . import updatesignal
+from .genericdialog import GenericDialog
 from .amountinput import AmountInput
 from .durationinput import DurationInput
 
 
 
-class NewInvoiceDialog(QDialog):
+class NewInvoiceDialog(GenericDialog):
     def __init__(self, parent, backend, invoiceLabel):
-        super().__init__(parent)
+        super().__init__(parent, backend)
         self.backend = backend
 
         self.label = None
@@ -33,54 +34,26 @@ class NewInvoiceDialog(QDialog):
         self.expirationTime = None
 
         self.setWindowTitle('Create a new invoice')
-
-        layout = QGridLayout()
-
-        labels = ['Label:', 'Description:', 'Amount:', 'Expires:']
-        for i, txt in enumerate(labels):
-            label = QLabel(txt, self)
-            layout.addWidget(label, i, 0)
+        self.setErrorMessage('Failed to create a new invoice')
 
         self.labelText = QLineEdit(invoiceLabel, self)
         self.descriptionText = QPlainTextEdit(self)
         self.amountText = AmountInput(self, self.backend.getNativeCurrency())
         self.expiryText = DurationInput(self)
 
-        layout.addWidget(self.labelText      , 0, 1)
-        layout.addWidget(self.descriptionText, 1, 1)
-        layout.addWidget(self.amountText     , 2, 1)
-        layout.addWidget(self.expiryText     , 3, 1)
+        self.addRow('Label:'      ,self.labelText)
+        self.addRow('Description:',self.descriptionText)
+        self.addRow('Amount:'     ,self.amountText)
+        self.addRow('Expires:'    , self.expiryText)
 
 
-        dialogButtons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        dialogButtons.accepted.connect(self.accept)
-        dialogButtons.rejected.connect(self.reject)
-        layout.addWidget(dialogButtons, 4, 0, 1, 2)
-
-        self.setLayout(layout)
-
-        self.accepted.connect(self.onAccepted)
-
-
-    def onAccepted(self):
-        try:
-            self.bolt11, self.expirationTime = self.backend.makeNewInvoice(
-                label=self.labelText.text(),
-                description=self.descriptionText.toPlainText(),
-                amount=self.amountText.getValue(),
-                expiry=self.expiryText.getValue()
-                )
-            self.label = self.labelText.text()
-            updatesignal.update()
-        except self.backend.CommandFailed as e:
-            updatesignal.update()
-            QMessageBox.critical(self, 'Failed to create a new invoice',
-                'Creating a new invoice failed with the following error message:\n\n'
-                 + str(e)
-                )
-        except self.backend.NotConnected:
-            QMessageBox.critical(self, 'Failed to create a new invoice',
-                'Creating a new invoice failed: back-end not connected.'
-                )
+    def doCommand(self):
+        self.bolt11, self.expirationTime = self.backend.makeNewInvoice(
+            label=self.labelText.text(),
+            description=self.descriptionText.toPlainText(),
+            amount=self.amountText.getValue(),
+            expiry=self.expiryText.getValue()
+            )
+        self.label = self.labelText.text()
+        updatesignal.update()
 
