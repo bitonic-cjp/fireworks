@@ -145,6 +145,10 @@ class ChannelsInScroll(QWidget):
         #TODO: scale widget
 
         label = QLabel('Link to this node:\n' + self.nodeLink, self)
+        label.setTextInteractionFlags(
+            Qt.TextSelectableByMouse | \
+            Qt.TextSelectableByKeyboard
+            )
         label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.layout.addWidget(label, 1, 1)
 
