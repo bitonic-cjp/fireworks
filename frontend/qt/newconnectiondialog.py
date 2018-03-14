@@ -28,7 +28,7 @@ class NewConnectionDialog(QDialog):
 
         self.setWindowTitle('Create a new connection')
 
-        layout = QGridLayout(self)
+        layout = QGridLayout()
 
         layout.addWidget(QLabel('Format: id@host[:port]' , self), 0, 0, 1, 2)
         layout.addWidget(QLabel('Link:', self), 1, 0)

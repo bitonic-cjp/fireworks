@@ -30,7 +30,7 @@ class NewChannelDialog(QDialog):
 
         self.setWindowTitle('Create a new channel')
 
-        layout = QGridLayout(self)
+        layout = QGridLayout()
 
         labels = ['Peer ID:', 'Peer alias:', 'Amount:']
         for i, txt in enumerate(labels):

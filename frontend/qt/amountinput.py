@@ -29,7 +29,7 @@ class AmountInput(QWidget):
         self.currency = currency
         info = currencyInfo[currency]
 
-        layout = QHBoxLayout(self)
+        layout = QHBoxLayout()
         layout.setContentsMargins(0,0,0,0)
 
         self.input = QLineEdit(self)

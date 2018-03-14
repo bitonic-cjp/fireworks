@@ -28,7 +28,7 @@ class DurationInput(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
 
-        layout = QHBoxLayout(self)
+        layout = QHBoxLayout()
         layout.setContentsMargins(0,0,0,0)
 
         self.input = QLineEdit(self)

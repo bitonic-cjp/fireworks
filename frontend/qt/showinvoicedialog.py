@@ -70,7 +70,7 @@ class ShowInvoiceDialog(QDialog):
 
         self.setWindowTitle('New invoice data')
 
-        layout = QGridLayout(self)
+        layout = QGridLayout()
 
         labels = ['Amount:', 'Expiration date:', 'Status:']
         for i, txt in enumerate(labels):

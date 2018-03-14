@@ -38,7 +38,7 @@ class BalanceFrame(QFrame):
         self.setFrameShadow(QFrame.Raised)
         self.setFrameShape(QFrame.StyledPanel)
 
-        self.layout = QGridLayout(self)
+        self.layout = QGridLayout()
 
         self.boldFont = QtGui.QFont()
         self.boldFont.setBold(True)
@@ -88,7 +88,7 @@ class Overview(QWidget):
     def __init__(self, parent, backend):
         super().__init__(parent)
         self.backend = backend
-        layout = QHBoxLayout(self)
+        layout = QHBoxLayout()
 
         self.sendFrame = BalanceFrame(self,
             'Available for sending',

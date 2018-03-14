@@ -92,10 +92,10 @@ class Invoices(QWidget):
         super().__init__(parent)
         self.backend = backend
 
-        layout = QHBoxLayout(self)
+        layout = QHBoxLayout()
 
         #### LEFT SIDE ###
-        listLayout = QVBoxLayout(self)
+        listLayout = QVBoxLayout()
         layout.addLayout(listLayout, 0)
 
         newInvoiceButton = QPushButton('Create new invoice', self)
@@ -126,7 +126,7 @@ class Invoices(QWidget):
         listLayout.addWidget(tableView, 0)
 
         #### RIGHT SIDE ###
-        detailLayout = QGridLayout(self)
+        detailLayout = QGridLayout()
         layout.addLayout(detailLayout, 0)
 
         labels = ['Expiration date:', 'Label:', 'Amount:', 'Status:']

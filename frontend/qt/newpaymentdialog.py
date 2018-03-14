@@ -39,7 +39,7 @@ class NewPaymentDialog(QDialog):
 
         self.setWindowTitle('Perform a new payment')
 
-        layout = QGridLayout(self)
+        layout = QGridLayout()
 
         layout.addWidget(QLabel('Invoice code:', self), 0, 0)
 

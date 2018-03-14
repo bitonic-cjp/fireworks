@@ -98,7 +98,7 @@ class ChannelsInScroll(QWidget):
         self.peers = []
         self.nodeLink = ''
 
-        self.layout = QGridLayout(self)
+        self.layout = QGridLayout()
         self.setLayout(self.layout)
 
         self.constructWidgets()

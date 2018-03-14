@@ -91,10 +91,10 @@ class Payments(QWidget):
         super().__init__(parent)
         self.backend = backend
 
-        layout = QHBoxLayout(self)
+        layout = QHBoxLayout()
 
         #### LEFT SIDE ###
-        listLayout = QVBoxLayout(self)
+        listLayout = QVBoxLayout()
         layout.addLayout(listLayout, 0)
 
         newPaymentButton = QPushButton('Perform a new payment', self)
@@ -124,7 +124,7 @@ class Payments(QWidget):
         listLayout.addWidget(tableView, 0)
 
         #### RIGHT SIDE ###
-        detailLayout = QGridLayout(self)
+        detailLayout = QGridLayout()
         layout.addLayout(detailLayout, 0)
 
         labels = [

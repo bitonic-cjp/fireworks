@@ -34,7 +34,7 @@ class NewInvoiceDialog(QDialog):
 
         self.setWindowTitle('Create a new invoice')
 
-        layout = QGridLayout(self)
+        layout = QGridLayout()
 
         labels = ['Label:', 'Description:', 'Amount:', 'Expires:']
         for i, txt in enumerate(labels):
