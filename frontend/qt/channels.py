@@ -258,8 +258,7 @@ class Channels(QScrollArea):
     def eventFilter(self, obj, event):
         if obj == self.widget() and event.type() == QEvent.Resize:
             self.setMinimumWidth(
-                self.widget().minimumSizeHint().width() +
-                self.verticalScrollBar().width()
+                self.widget().minimumSizeHint().width()
                 )
 
         return super().eventFilter(obj, event)
