@@ -190,7 +190,6 @@ class ChannelsInScroll(QWidget):
                     self, peer, c.fundingTxID
                     ))
                 button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                button.setEnabled(c.operational)
                 self.layout.addWidget(button, currentRow, 3)
 
                 currentRow += 1
