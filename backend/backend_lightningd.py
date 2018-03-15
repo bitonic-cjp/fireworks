@@ -184,21 +184,33 @@ class Backend:
 
 
     @translateRPCExceptions
-    def getNodeLink(self):
+    def getNodeLinks(self):
         '''
         Arguments:
-        Returns: str
+        Returns: list(str)
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
         if self.nodeInfo is None and not self.initNodeInfo():
             raise self.NotConnected()
 
-        address = '(unknown hostname)'
-        if self.nodeInfo['address']:
-            address = self.nodeInfo['address'][0]
+        node_id = self.nodeInfo['id']
 
-        return '%s@%s:%s' % (self.nodeInfo['id'], address, self.nodeInfo['port'])
+        ret = []
+        if self.nodeInfo['address']:
+            for a in self.nodeInfo['address']:
+                ret.append(
+                    '%s@%s:%s' % \
+                    (node_id, a['address'], a['port'])
+                    )
+
+        if not ret:
+            ret = [
+                '%s@%s:%s' % \
+                (node_id, '(unknown hostname)', self.nodeInfo['port'])
+                ]
+
+        return ret
 
 
     @translateRPCExceptions
