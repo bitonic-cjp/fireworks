@@ -32,6 +32,7 @@ class NewConnectionDialog(GenericDialog):
 
         self.linkText = QLineEdit(self)
 
+        self.addWidget(QLabel('Enter the link of the node you want to connect to.', self))
         self.addRow('Format:', QLabel('id@host[:port]', self))
         self.addRow('Link:'  , self.linkText)
 
