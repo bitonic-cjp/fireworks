@@ -30,9 +30,6 @@ class AmountValidator(QValidator):
         self.currency = currency
         self.unit = unit
 
-    #def fixup(self, input):
-    #    return input
-
 
     def validate(self, input, pos):
         try:
@@ -51,6 +48,44 @@ class AmountValidator(QValidator):
 
 
 
+class AmountLineEdit(QLineEdit):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setAlignment(Qt.AlignRight)
+
+    def keyPressEvent(self, event):
+        def default():
+            return super(AmountLineEdit, self).keyPressEvent(event)
+
+        text = self.text()
+        cursor = self.cursorPosition()
+
+        #Move the period when a new period is inserted
+        if event.key() in (Qt.Key_Period, Qt.Key_Comma):
+            #Remove the pre-existing period
+            beforeCursor = text[:cursor].replace('.', '')
+            afterCursor = text[cursor:].replace('.', '')
+            #Remove '0's at start:
+            beforeCursor = str(int(beforeCursor))
+
+            self.setText(beforeCursor + '.' + afterCursor)
+            self.setCursorPosition(len(beforeCursor)+1) #after the new period
+            return
+
+        #Don't delete an existing period
+        elif event.key() == (Qt.Key_Delete):
+            if cursor < len(text) and text[cursor] == '.':
+                self.setCursorPosition(cursor+1) #only move right
+                return
+        elif event.key() == (Qt.Key_Backspace):
+            if cursor > 0 and text[cursor-1] == '.':
+                self.setCursorPosition(cursor-1) #only move left
+                return
+
+        default()
+
+
+
 class AmountInput(QWidget):
     def __init__(self, parent, currency):
         super().__init__(parent)
@@ -61,8 +96,7 @@ class AmountInput(QWidget):
         layout = QHBoxLayout()
         layout.setContentsMargins(0,0,0,0)
 
-        self.input = QLineEdit(self)
-        self.input.setAlignment(Qt.AlignRight)
+        self.input = AmountLineEdit(self)
         self.validator = AmountValidator(self.input, currency, info.defaultUnit)
         self.input.setValidator(self.validator)
         self.input.setText('0')
