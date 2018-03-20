@@ -63,8 +63,8 @@ class AmountInput(QWidget):
 
         self.input = QLineEdit(self)
         self.input.setAlignment(Qt.AlignRight)
-        validator = AmountValidator(self.input, currency, info.defaultUnit)
-        self.input.setValidator(validator)
+        self.validator = AmountValidator(self.input, currency, info.defaultUnit)
+        self.input.setValidator(self.validator)
         self.input.setText('0')
         layout.addWidget(self.input, 1)
 
@@ -75,12 +75,22 @@ class AmountInput(QWidget):
         for i in range(len(units)):
             self.unit.insertItem(i, units[i])
         self.unit.setCurrentIndex(units.index(info.defaultUnit))
+        self.unit.currentIndexChanged.connect(self.onUnitChange)
         layout.addWidget(self.unit, 0)
 
         self.setLayout(layout)
 
 
+    def onUnitChange(self, event):
+        newUnit = self.unit.currentText()
+
+        self.validator.unit = newUnit
+        self.input.setText('0' + self.input.text()) #Trigger the validator
+
+
     def getValue(self):
-        amountText = self.input.text() + ' ' + self.unit.currentText()
-        return formatting.unformatAmount(amountText, self.currency)
+        return formatting.unformatAmountWithoutUnit(
+            self.input.text(),
+            self.currency,
+            self.unit.currentText())
 
