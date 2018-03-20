@@ -18,6 +18,8 @@
 import decimal
 
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QComboBox, QLineEdit
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIntValidator
 
 from .. import formatting
 from utils.currencies import currencyInfo
@@ -32,6 +34,8 @@ class DurationInput(QWidget):
         layout.setContentsMargins(0,0,0,0)
 
         self.input = QLineEdit(self)
+        self.input.setAlignment(Qt.AlignRight)
+        self.input.setValidator(QIntValidator(self.input))
         self.input.setText('1')
         layout.addWidget(self.input, 1)
 
@@ -43,6 +47,7 @@ class DurationInput(QWidget):
         layout.addWidget(self.unit, 0)
 
         self.setLayout(layout)
+
 
 
     def getValue(self):
