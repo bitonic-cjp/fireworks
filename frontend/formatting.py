@@ -58,6 +58,29 @@ def formatAmount(amount, currency, unit=None):
     Exceptions:
         none
     '''
+
+    info = currencyInfo[currency]
+    if unit is None:
+        unit = info.defaultUnit
+
+    return '%s %s' % (formatAmountWithoutUnit(amount, currency, unit), unit)
+
+
+def formatAmountWithoutUnit(amount, currency, unit=None):
+    '''
+    Arguments:
+        amount: int
+            amount in mSatoshi
+        currency: str
+            BIP-173 currency code
+        unit: None or str
+            str:  Use the given unit
+            None: Use the default unit for the currency
+    Returns: str
+        the formatted amount
+    Exceptions:
+        none
+    '''
     #Maybe also pass the precision as argument?
 
     info = currencyInfo[currency]
@@ -68,14 +91,14 @@ def formatAmount(amount, currency, unit=None):
     sign = '-' if amount < 0 else ''
     amount = abs(amount)
 
-    ret = ' ' + unit
+    ret = ''
 
     if multiplier == 1:
         #No decimal separator
-        return '%s%d%s' % (sign, amount, ret)
+        return '%s%d' % (sign, amount)
     elif multiplier > 1000:
         #Sub-satoshi part after a space, if we we use a more-than-satoshi unit
-        ret = ' %03d%s' % (amount % 1000, ret)
+        ret = ' %03d' % (amount % 1000)
         amount //= 1000
         multiplier //= 1000
 
@@ -121,4 +144,24 @@ def unformatAmount(text, currency):
     multiplier = info.multipliers[unit]
     amount = multiplier * decimal.Decimal(text)
     return int(amount)
+
+
+def unformatAmountWithoutUnit(text, currency, unit):
+    '''
+    Arguments:
+        text: str
+            the formatted amount. Should be:
+            [x][.y]
+            where x and y consist of decimal characters
+            Whitespace is ignored.
+        currency: str
+            BIP-173 currency code
+        unit: str
+            A recognized unit.
+    Returns: int
+        amount in mSatoshi
+    Exceptions:
+        Exception: syntax error
+    '''
+    return unformatAmount(text+unit, currency)
 

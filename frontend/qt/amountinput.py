@@ -16,9 +16,38 @@
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QComboBox, QLineEdit
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QValidator
 
 from .. import formatting
 from utils.currencies import currencyInfo
+
+
+
+class AmountValidator(QValidator):
+    def __init__(self, parent, currency, unit):
+        super().__init__(parent)
+        self.currency = currency
+        self.unit = unit
+
+    #def fixup(self, input):
+    #    return input
+
+
+    def validate(self, input, pos):
+        try:
+            amount = formatting.unformatAmountWithoutUnit(input, self.currency, self.unit)
+        except:
+            return (QValidator.Invalid, input, pos)
+
+
+        newInput = formatting.formatAmountWithoutUnit(amount, self.currency, self.unit)
+
+        #Never have the cursor before the space separator:
+        if pos < len(newInput) and newInput[pos] == ' ':
+            pos += 1
+
+        return (QValidator.Acceptable, newInput, pos)
 
 
 
@@ -33,7 +62,10 @@ class AmountInput(QWidget):
         layout.setContentsMargins(0,0,0,0)
 
         self.input = QLineEdit(self)
-        self.input.setText('0.00000000 000')
+        self.input.setAlignment(Qt.AlignRight)
+        validator = AmountValidator(self.input, currency, info.defaultUnit)
+        self.input.setValidator(validator)
+        self.input.setText('0')
         layout.addWidget(self.input, 1)
 
         units = [(k,v) for k,v in info.multipliers.items()]
