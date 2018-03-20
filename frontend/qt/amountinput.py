@@ -32,6 +32,10 @@ class AmountValidator(QValidator):
 
 
     def validate(self, input, pos):
+        #Allow empty input, and interpret it as 0
+        if input == '':
+            input = '0'
+
         try:
             amount = formatting.unformatAmountWithoutUnit(input, self.currency, self.unit)
         except:
@@ -66,7 +70,8 @@ class AmountLineEdit(QLineEdit):
             beforeCursor = text[:cursor].replace('.', '')
             afterCursor = text[cursor:].replace('.', '')
             #Remove '0's at start:
-            beforeCursor = str(int(beforeCursor))
+            if beforeCursor:
+                beforeCursor = str(int(beforeCursor))
 
             self.setText(beforeCursor + '.' + afterCursor)
             self.setCursorPosition(len(beforeCursor)+1) #after the new period
