@@ -19,58 +19,9 @@ import os.path
 import logging
 import json
 
+from .backend_base import Invoice, InvoiceData, Payment, Channel, Peer
+from .backend_base import Backend as Backend_Base
 from .lightningd.lightning import LightningRpc
-from utils.struct import Struct
-
-
-
-class Invoice(Struct):
-    amount = None         #int, mSatoshi
-    currency = None       #str, BIP-173
-    label = None          #str
-    expirationTime = None #int, UNIX timestamp
-    status = None         #str
-
-
-class InvoiceData(Struct):
-    creationTime = None          #int, UNIX timestamp
-    expirationTime = None        #int, UNIX timestamp
-    min_final_cltv_expiry = None #int
-    amount = None                #int, mSatoshi
-    currency = None              #str, BIP-173
-    description = None           #str
-    payee = None                 #str
-    paymentHash = None           #str
-    signature = None             #str
-
-
-class Payment(Struct):
-    amount = None          #int, mSatoshi
-    currency = None        #str, BIP-173
-    label = None           #str
-    timestamp = None       #int, UNIX timestamp
-    status = None          #str
-    destination = None     #str
-    paymentHash = None     #str
-    paymentPreimage = None #str
-
-
-class Channel(Struct):
-    state          = None #str
-    operational    = None #bool
-    fundingTxID    = None #str
-    ownFunds       = None #int, mSatoshi
-    lockedIncoming = None #int, mSatoshi
-    lockedOutgoing = None #int, mSatoshi
-    peerFunds      = None #int, mSatoshi
-
-
-class Peer(Struct):
-    peerID = None    #str
-    alias = None     #str
-    color = None     #str
-    connected = None #bool
-    channels = []    #list of Channel
 
 
 
@@ -82,14 +33,9 @@ def translateRPCExceptions(method):
             raise self.NotConnected(str(e))
     return newMethod
 
-class Backend:
-    class CommandFailed(Exception):
-        pass
-
-    class NotConnected(Exception):
-        pass
 
 
+class Backend(Backend_Base):
     def __init__(self, config):
         logging.info('Using Lightningd back-end')
         lightningDir = config.getValue('lightningd', 'dir')
