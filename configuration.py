@@ -40,6 +40,9 @@ class Configuration:
             {
             'dir': '~/.lightning'
             },
+        'lnd':
+            {
+            },
         'core':
             {
             'loglevel': 'info'

@@ -48,7 +48,7 @@ class Backend(Backend_Base):
 
     def getBackendName(self):
         if self.nodeInfo is None and not self.initNodeInfo():
-            raise self.NotConnected()
+            raise Backend.NotConnected()
         return 'Lightningd ' + self.nodeInfo['version']
 
 

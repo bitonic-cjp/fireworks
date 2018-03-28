@@ -33,6 +33,9 @@ def getBackendModule(name):
     if name == 'lightningd':
         from backend import backend_lightningd
         return backend_lightningd
+    elif name == 'lnd':
+        from backend import backend_lnd
+        return backend_lnd
     raise Exception('Unrecognized backend name ' + name)
 
 
