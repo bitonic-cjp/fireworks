@@ -17,7 +17,7 @@
 
 import logging
 import os
-import time
+import codecs
 
 import grpc
 
@@ -29,7 +29,7 @@ from .backend_base import Backend as Backend_Base
 
 
 
-#See http://dev.lightning.community/guides/python-grpc/
+#See https://github.com/lightningnetwork/lnd/blob/master/docs/grpc/python.md
 
 class Backend(Backend_Base):
     def __init__(self, config):
@@ -41,6 +41,16 @@ class Backend(Backend_Base):
         with open(certFile, 'rb') as f:
             cert = f.read()
         self.creds = grpc.ssl_channel_credentials(cert)
+
+        macaroonFile = config.getValue('lnd', 'macaroonfile')
+        if macaroonFile.strip() == '':
+            self.macaroon = None
+        else:
+            macaroonFile = os.path.expanduser(macaroonFile)
+            macaroonFile = os.path.abspath(macaroonFile)
+            with open(macaroonFile, 'rb') as f:
+                macaroon_bytes = f.read()
+                self.macaroon = codecs.encode(macaroon_bytes, 'hex')
 
         self.RPCHost = config.getValue('lnd', 'rpchost')
         self.RPCPort = int(config.getValue('lnd', 'rpcport'))
@@ -86,7 +96,10 @@ class Backend(Backend_Base):
             raise Backend.CommandFailed('Command does not exist')
 
         request = requestType(*args)
-        response = method(request)
+        if self.macaroon is None:
+            response = method(request)
+        else:
+            response = method(request, metadata=[('macaroon', self.macaroon)])
 
         return response
 

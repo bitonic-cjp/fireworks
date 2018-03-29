@@ -43,6 +43,7 @@ class Configuration:
         'lnd':
             {
             'certfile': '~/.lnd/tls.cert',
+            'macaroonfile': '~/.lnd/admin.macaroon',
             'rpchost': 'localhost',
             'rpcport': '10009'
             },
