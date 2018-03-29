@@ -16,15 +16,45 @@
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import os
+import time
+
+import grpc
+
+from .lnd import rpc_pb2 as ln
+from .lnd import rpc_pb2_grpc as lnrpc
 
 from .backend_base import Invoice, InvoiceData, Payment, Channel, Peer
 from .backend_base import Backend as Backend_Base
 
 
 
+#See http://dev.lightning.community/guides/python-grpc/
+
 class Backend(Backend_Base):
     def __init__(self, config):
         logging.info('Using LND back-end')
+
+        certFile = config.getValue('lnd', 'certfile')
+        certFile = os.path.expanduser(certFile)
+        certFile = os.path.abspath(certFile)
+        with open(certFile, 'rb') as f:
+            cert = f.read()
+        self.creds = grpc.ssl_channel_credentials(cert)
+
+        self.RPCHost = config.getValue('lnd', 'rpchost')
+        self.RPCPort = int(config.getValue('lnd', 'rpcport'))
+
+        self.channel = None
+        self.rpc = None
+        self.tryToConnect()
+
+
+    def tryToConnect(self):
+        self.channel = grpc.secure_channel(
+            '%s:%d' % (self.RPCHost, self.RPCPort),
+            self.creds)
+        self.rpc = lnrpc.LightningStub(self.channel)
 
 
     def getBackendName(self):
@@ -48,7 +78,17 @@ class Backend(Backend_Base):
             Backend.CommandFailed: the command failed
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+
+        try:
+            method = getattr(self.rpc, cmd)
+            requestType = getattr(ln, cmd + 'Request')
+        except AttributeError:
+            raise Backend.CommandFailed('Command does not exist')
+
+        request = requestType(*args)
+        response = method(request)
+
+        return response
 
 
     def getNativeCurrency(self):
@@ -217,6 +257,22 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+#On loading the module, set the TLS ciphers that are used by LND:
+# Default is ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384
+# https://github.com/grpc/grpc/blob/master/doc/environment_variables.md
+#
+# Current LND cipher suites here:
+# https://github.com/lightningnetwork/lnd/blob/master/lnd.go#L80
+#
+# We order the suites by priority, based on the recommendations provided by SSL Labs here:
+# https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices#23-use-secure-cipher-suites
+os.environ['GRPC_SSL_CIPHER_SUITES'] = ':'.join(
+    [
+      'ECDHE-ECDSA-AES128-GCM-SHA256',
+      'ECDHE-ECDSA-AES256-GCM-SHA384',
+      'ECDHE-ECDSA-AES128-CBC-SHA256',
+      'ECDHE-ECDSA-CHACHA20-POLY1305'
+    ])
 
 logging.info('Loaded LND back-end module')
 

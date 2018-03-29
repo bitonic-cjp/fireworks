@@ -42,6 +42,9 @@ class Configuration:
             },
         'lnd':
             {
+            'certfile': '~/.lnd/tls.cert',
+            'rpchost': 'localhost',
+            'rpcport': '10009'
             },
         'core':
             {
