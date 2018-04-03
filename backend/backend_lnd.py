@@ -64,6 +64,32 @@ class Backend(Backend_Base):
         self.channel = grpc.secure_channel(
             '%s:%d' % (self.RPCHost, self.RPCPort),
             self.creds)
+
+        unlocker = lnrpc.WalletUnlockerStub(self.channel)
+
+        #First try to unlock with an invalid passphrase.
+        #This will fail with StatusCode.UNIMPLEMENTED if already unlocked
+        #This will fail with StatusCode.UNKNOWN otherwise
+        needsUnlock = True
+        try:
+            request = ln.UnlockWalletRequest(
+                wallet_password='Invalid passphrase'.encode()
+                )
+            unlocker.UnlockWallet(request)
+        except grpc.RpcError as e:
+            state = e._state
+            if state.code == grpc.StatusCode.UNKNOWN:
+                pass #normal behavior
+            elif state.code == grpc.StatusCode.UNIMPLEMENTED:
+                needsUnlock = False
+            else:
+                raise
+
+        if needsUnlock:
+            password = input('Wallet password:').encode() #TODO: GUI
+            request = ln.UnlockWalletRequest(wallet_password=password)
+            unlocker.UnlockWallet(request)
+
         self.rpc = lnrpc.LightningStub(self.channel)
 
 
@@ -96,10 +122,24 @@ class Backend(Backend_Base):
             raise Backend.CommandFailed('Command does not exist')
 
         request = requestType(*args)
-        if self.macaroon is None:
-            response = method(request)
-        else:
-            response = method(request, metadata=[('macaroon', self.macaroon)])
+
+        try:
+            if self.macaroon is None:
+                response = method(request)
+            else:
+                response = method(request, metadata=[('macaroon', self.macaroon)])
+        except grpc.RpcError as e:
+            try:
+                state = e._state
+            except AttributeError:
+                raise Backend.CommandFailed('Command failed: ' + str(e))
+
+            if state.code == grpc.StatusCode.UNIMPLEMENTED:
+                raise Backend.CommandFailed(
+                    'Command failed: wallet seems to be locked')
+            else:
+                raise Backend.CommandFailed('Command failed: ' + str(e))
+
 
         return response
 
