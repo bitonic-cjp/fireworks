@@ -31,6 +31,18 @@ from .backend_base import Backend as Backend_Base
 
 #See https://github.com/lightningnetwork/lnd/blob/master/docs/grpc/python.md
 
+
+
+def manageConnection(method):
+    def newMethod(self, *args, **kwargs):
+        if self.rpc is None and not self.tryToConnect():
+            raise self.NotConnected('Back-end is not connected')
+        return method(self, *args, **kwargs)
+
+    return newMethod
+
+
+
 class Backend(Backend_Base):
     def __init__(self, config):
         logging.info('Using LND back-end')
@@ -69,6 +81,7 @@ class Backend(Backend_Base):
 
         #First try to unlock with an invalid passphrase.
         #This will fail with StatusCode.UNIMPLEMENTED if already unlocked
+        #This will fail with StatusCode.UNAVAILABLE if the connection fails
         #This will fail with StatusCode.UNKNOWN otherwise
         needsUnlock = True
         try:
@@ -79,18 +92,26 @@ class Backend(Backend_Base):
         except grpc.RpcError as e:
             state = e._state
             if state.code == grpc.StatusCode.UNKNOWN:
-                pass #normal behavior
+                pass #already unlocked
             elif state.code == grpc.StatusCode.UNIMPLEMENTED:
                 needsUnlock = False
+            elif state.code == grpc.StatusCode.UNAVAILABLE:
+                return False #tryToConnect fails
             else:
-                raise
+                raise #unexpected
 
         if needsUnlock:
             password = input('Wallet password:').encode() #TODO: GUI
             request = ln.UnlockWalletRequest(wallet_password=password)
             unlocker.UnlockWallet(request)
 
+        #Re-open channel after unlock attempt:
+        self.channel = grpc.secure_channel(
+            '%s:%d' % (self.RPCHost, self.RPCPort),
+            self.creds)
+
         self.rpc = lnrpc.LightningStub(self.channel)
+        return True
 
 
     def getBackendName(self):
@@ -101,6 +122,7 @@ class Backend(Backend_Base):
         return False
 
 
+    @manageConnection
     def runCommand(self, cmd, *args):
         '''
         Arguments:
@@ -144,6 +166,7 @@ class Backend(Backend_Base):
         return response
 
 
+    @manageConnection
     def getNativeCurrency(self):
         '''
         Arguments:
@@ -155,6 +178,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def getNodeLinks(self):
         '''
         Arguments:
@@ -165,6 +189,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def getNonChannelFunds(self):
         '''
         Arguments:
@@ -182,6 +207,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def getChannelFunds(self):
         '''
         Arguments:
@@ -195,6 +221,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def getPeers(self):
         '''
         Arguments:
@@ -206,6 +233,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def getInvoices(self):
         '''
         Arguments:
@@ -217,6 +245,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def getPayments(self):
         '''
         Arguments:
@@ -228,6 +257,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def makeNewInvoice(self, label, description, amount, expiry):
         '''
         Arguments:
@@ -247,6 +277,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def decodeInvoiceData(self, bolt11):
         '''
         Arguments:
@@ -259,6 +290,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def pay(self, bolt11):
         '''
         Arguments:
@@ -271,6 +303,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def connect(self, link):
         '''
         Arguments:
@@ -284,6 +317,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def makeChannel(self, peerID, amount):
         '''
         Arguments:
@@ -298,6 +332,7 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
+    @manageConnection
     def closeChannel(self, fundingTxID):
         '''
         Arguments:
