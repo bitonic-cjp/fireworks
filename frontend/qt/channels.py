@@ -95,13 +95,11 @@ class ChannelsInScroll(QWidget):
         super().__init__(parent)
         self.backend = backend
 
-        self.peers = []
-        self.nodeLinks = []
+        self.peers = None
+        self.nodeLinks = None
 
         self.layout = QGridLayout()
         self.setLayout(self.layout)
-
-        self.constructWidgets()
 
         updatesignal.connect(self.update)
 
@@ -115,12 +113,13 @@ class ChannelsInScroll(QWidget):
             self.peers = newPeers
             haveData = True
         except self.backend.NotConnected:
-            self.nodeLinks = []
-            self.peers = []
+            self.nodeLinks = None
+            self.peers = None
             haveData = False
 
         self.removeWidgets()
-        self.constructWidgets()
+        if haveData:
+            self.constructWidgets()
         self.setEnabled(haveData)
 
 
