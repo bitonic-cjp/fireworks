@@ -85,17 +85,11 @@ class Frontend:
         Returns: bytes
         '''
 
-        try:
-            updatesignal.setTimerEnabled(False)
+        dialog = QuestionDialog(self.ex, question, isPassword=True)
+        if(dialog.exec() != dialog.Accepted):
+            return None
 
-            dialog = QuestionDialog(self.ex, question, isPassword=True)
-            if(dialog.exec() != dialog.Accepted):
-                return None
-
-            return dialog.getAnswer().encode()
-
-        finally:
-            updatesignal.setTimerEnabled(True)
+        return dialog.getAnswer().encode()
 
 
 

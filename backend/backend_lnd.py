@@ -76,50 +76,61 @@ class Backend(Backend_Base):
 
         self.channel = None
         self.rpc = None
+        self.connectInProgress = False
 
 
     def tryToConnect(self):
-        self.channel = grpc.secure_channel(
-            '%s:%d' % (self.RPCHost, self.RPCPort),
-            self.creds)
+        #Enforce non-reentrant behavior.
+        #With a connect-in-progress, assume connecting failed.
+        if self.connectInProgress:
+            return False
 
-        unlocker = lnrpc.WalletUnlockerStub(self.channel)
-
-        #First try to unlock with an invalid passphrase.
-        #This will fail with StatusCode.UNIMPLEMENTED if already unlocked
-        #This will fail with StatusCode.UNAVAILABLE if the connection fails
-        #This will fail with StatusCode.UNKNOWN otherwise
-        needsUnlock = True
         try:
-            request = ln.UnlockWalletRequest(
-                wallet_password='Invalid passphrase'.encode()
-                )
-            unlocker.UnlockWallet(request)
-        except grpc.RpcError as e:
-            state = e._state
-            if state.code == grpc.StatusCode.UNKNOWN:
-                pass #already unlocked
-            elif state.code == grpc.StatusCode.UNIMPLEMENTED:
-                needsUnlock = False
-            elif state.code == grpc.StatusCode.UNAVAILABLE:
-                return False #tryToConnect fails
-            else:
-                raise #unexpected
+            self.connectInProgress = True
 
-        if needsUnlock:
-            password = self.frontend.getPassword('Wallet passphrase:')
+            self.channel = grpc.secure_channel(
+                '%s:%d' % (self.RPCHost, self.RPCPort),
+                self.creds)
 
-            if password is not None:
-                request = ln.UnlockWalletRequest(wallet_password=password)
+            unlocker = lnrpc.WalletUnlockerStub(self.channel)
+
+            #First try to unlock with an invalid passphrase.
+            #This will fail with StatusCode.UNIMPLEMENTED if already unlocked
+            #This will fail with StatusCode.UNAVAILABLE if the connection fails
+            #This will fail with StatusCode.UNKNOWN otherwise
+            needsUnlock = True
+            try:
+                request = ln.UnlockWalletRequest(
+                    wallet_password='Invalid passphrase'.encode()
+                    )
                 unlocker.UnlockWallet(request)
+            except grpc.RpcError as e:
+                state = e._state
+                if state.code == grpc.StatusCode.UNKNOWN:
+                    pass #already unlocked
+                elif state.code == grpc.StatusCode.UNIMPLEMENTED:
+                    needsUnlock = False
+                elif state.code == grpc.StatusCode.UNAVAILABLE:
+                    return False #tryToConnect fails
+                else:
+                    raise #unexpected
 
-        #Re-open channel after unlock attempt:
-        self.channel = grpc.secure_channel(
-            '%s:%d' % (self.RPCHost, self.RPCPort),
-            self.creds)
+            if needsUnlock:
+                password = self.frontend.getPassword('Wallet passphrase:')
 
-        self.rpc = lnrpc.LightningStub(self.channel)
-        return True
+                if password is not None:
+                    request = ln.UnlockWalletRequest(wallet_password=password)
+                    unlocker.UnlockWallet(request)
+
+            #Re-open channel after unlock attempt:
+            self.channel = grpc.secure_channel(
+                '%s:%d' % (self.RPCHost, self.RPCPort),
+                self.creds)
+
+            self.rpc = lnrpc.LightningStub(self.channel)
+            return True
+        finally:
+            self.connectInProgress = False
 
 
     def getBackendName(self):

@@ -34,7 +34,6 @@ class Updater(QtCore.QObject):
 
 timer = QtCore.QTimer()
 updater = Updater()
-interval = None
 
 
 
@@ -43,16 +42,7 @@ def initTimer():
 
 
 def setUpdateInterval(ms):
-    global interval
-    interval = ms
-    timer.start(interval)
-
-
-def setTimerEnabled(enabled):
-    if enabled:
-        timer.start(interval)
-    else:
-        timer.stop()
+    timer.start(ms)
 
 
 def update():
