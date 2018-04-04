@@ -108,8 +108,10 @@ class Backend(Backend_Base):
 
         if needsUnlock:
             password = self.frontend.getPassword('Wallet passphrase:')
-            request = ln.UnlockWalletRequest(wallet_password=password)
-            unlocker.UnlockWallet(request)
+
+            if password is not None:
+                request = ln.UnlockWalletRequest(wallet_password=password)
+                unlocker.UnlockWallet(request)
 
         #Re-open channel after unlock attempt:
         self.channel = grpc.secure_channel(
