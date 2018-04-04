@@ -55,6 +55,12 @@ class Backend(Backend_Base):
 
 
     def getBackendName(self):
+        '''
+        Arguments:
+        Returns: str
+        Exceptions:
+            Backend.NotConnected: not connected to the backend
+        '''
         if self.nodeInfo is None and not self.initNodeInfo():
             raise Backend.NotConnected()
         return 'Lightningd ' + self.nodeInfo['version']

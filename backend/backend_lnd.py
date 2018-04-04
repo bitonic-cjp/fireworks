@@ -18,6 +18,7 @@
 import logging
 import os
 import codecs
+import json
 
 import grpc
 
@@ -149,14 +150,19 @@ class Backend(Backend_Base):
 
 
     def getBackendName(self):
-        raise Backend.NotConnected()
+        '''
+        Arguments:
+        Returns: str
+        Exceptions:
+            Backend.NotConnected: not connected to the backend
+        '''
+        return 'LND'
 
 
     def isConnected(self):
-        return False
+        return self.rpc is not None or self.tryToConnect()
 
 
-    @manageConnection
     def runCommand(self, cmd, *args):
         '''
         Arguments:
@@ -171,13 +177,36 @@ class Backend(Backend_Base):
             Backend.NotConnected: not connected to the backend
         '''
 
+        #In this back-end, the format is "<name>=<JSON>" or "<name>=<str>"
+        kwargs = {}
+        for a in args:
+            try:
+                isPos = a.index('=')
+            except ValueError:
+                raise Backend.CommandFailed(
+                    'Argument \"%s\" does not conform to the name=value format' % \
+                    a)
+            name = a[:isPos]
+            value = a[isPos+1:]
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                #In case it isn't JSON, keep it as a string
+                pass
+            kwargs[name] = value
+
+        return self.runCommandLowLevel(cmd, **kwargs)
+
+
+    @manageConnection
+    def runCommandLowLevel(self, cmd, **kwargs):
         try:
             method = getattr(self.rpc, cmd)
             requestType = getattr(ln, cmd + 'Request')
         except AttributeError:
             raise Backend.CommandFailed('Command does not exist')
 
-        request = requestType(*args)
+        request = requestType(**kwargs)
 
         try:
             if self.macaroon is None:
@@ -200,7 +229,6 @@ class Backend(Backend_Base):
         return response
 
 
-    @manageConnection
     def getNativeCurrency(self):
         '''
         Arguments:
@@ -212,7 +240,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def getNodeLinks(self):
         '''
         Arguments:
@@ -223,7 +250,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def getNonChannelFunds(self):
         '''
         Arguments:
@@ -241,7 +267,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def getChannelFunds(self):
         '''
         Arguments:
@@ -255,7 +280,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def getPeers(self):
         '''
         Arguments:
@@ -267,7 +291,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def getInvoices(self):
         '''
         Arguments:
@@ -279,7 +302,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def getPayments(self):
         '''
         Arguments:
@@ -291,7 +313,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def makeNewInvoice(self, label, description, amount, expiry):
         '''
         Arguments:
@@ -311,7 +332,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def decodeInvoiceData(self, bolt11):
         '''
         Arguments:
@@ -324,7 +344,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def pay(self, bolt11):
         '''
         Arguments:
@@ -337,7 +356,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def connect(self, link):
         '''
         Arguments:
@@ -351,7 +369,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def makeChannel(self, peerID, amount):
         '''
         Arguments:
@@ -366,7 +383,6 @@ class Backend(Backend_Base):
         raise Backend.NotConnected()
 
 
-    @manageConnection
     def closeChannel(self, fundingTxID):
         '''
         Arguments:
