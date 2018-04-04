@@ -108,7 +108,7 @@ class Backend(Backend_Base):
                 raise #unexpected
 
         if needsUnlock:
-            password = self.frontend.getPassword('Wallet password:')
+            password = self.frontend.getPassword('Wallet passphrase:')
             request = ln.UnlockWalletRequest(wallet_password=password)
             unlocker.UnlockWallet(request)
 
