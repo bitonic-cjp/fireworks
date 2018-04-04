@@ -25,18 +25,37 @@ from .qt import updatesignal
 
 
 class Frontend:
-    def __init__(self, config, backend):
+    def __init__(self, config):
         logging.info('Using Qt front-end')
-        self.app = QApplication(sys.argv)
-        self.ex = MainWindow(config, backend)
-        updatesignal.initTimer()
-        updatesignal.setUpdateInterval(1000)
+        self.config = config
+
+
+    def setBackend(self, backend):
+        self.backend = backend
 
 
     def run(self):
         logging.info('Starting Qt front-end')
+
+        app = QApplication(sys.argv)
+
+        self.backend.startup()
+
+        ex = MainWindow(self.config, self.backend)
+        updatesignal.initTimer()
+        updatesignal.setUpdateInterval(1000)
+
         updatesignal.update() #First update
-        sys.exit(self.app.exec_())
+        sys.exit(app.exec_())
+
+
+    def getPassword(self, question):
+        '''
+        Arguments:
+            question: str
+        Returns: bytes
+        '''
+        return input(question).encode()
 
 
 

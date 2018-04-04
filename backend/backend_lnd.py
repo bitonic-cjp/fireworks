@@ -46,15 +46,22 @@ def manageConnection(method):
 class Backend(Backend_Base):
     def __init__(self, config):
         logging.info('Using LND back-end')
+        self.config = config
 
-        certFile = config.getValue('lnd', 'certfile')
+
+    def setFrontend(self, frontend):
+        self.frontend = frontend
+
+
+    def startup(self):
+        certFile = self.config.getValue('lnd', 'certfile')
         certFile = os.path.expanduser(certFile)
         certFile = os.path.abspath(certFile)
         with open(certFile, 'rb') as f:
             cert = f.read()
         self.creds = grpc.ssl_channel_credentials(cert)
 
-        macaroonFile = config.getValue('lnd', 'macaroonfile')
+        macaroonFile = self.config.getValue('lnd', 'macaroonfile')
         if macaroonFile.strip() == '':
             self.macaroon = None
         else:
@@ -64,8 +71,8 @@ class Backend(Backend_Base):
                 macaroon_bytes = f.read()
                 self.macaroon = codecs.encode(macaroon_bytes, 'hex')
 
-        self.RPCHost = config.getValue('lnd', 'rpchost')
-        self.RPCPort = int(config.getValue('lnd', 'rpcport'))
+        self.RPCHost = self.config.getValue('lnd', 'rpchost')
+        self.RPCPort = int(self.config.getValue('lnd', 'rpcport'))
 
         self.channel = None
         self.rpc = None
@@ -101,7 +108,7 @@ class Backend(Backend_Base):
                 raise #unexpected
 
         if needsUnlock:
-            password = input('Wallet password:').encode() #TODO: GUI
+            password = self.frontend.getPassword('Wallet password:')
             request = ln.UnlockWalletRequest(wallet_password=password)
             unlocker.UnlockWallet(request)
 

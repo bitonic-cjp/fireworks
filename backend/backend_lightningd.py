@@ -38,7 +38,15 @@ def translateRPCExceptions(method):
 class Backend(Backend_Base):
     def __init__(self, config):
         logging.info('Using Lightningd back-end')
-        lightningDir = config.getValue('lightningd', 'dir')
+        self.config = config
+
+
+    def setFrontend(self, frontend):
+        pass #unused
+
+
+    def startup(self):
+        lightningDir = self.config.getValue('lightningd', 'dir')
         lightningDir = os.path.expanduser(lightningDir)
         lightningDir = os.path.abspath(lightningDir)
         socketFile = os.path.join(lightningDir, 'lightning-rpc')

@@ -58,7 +58,10 @@ backendModule  = getBackendModule(config.getValue('modules', 'backend'))
 frontendModule = getFrontendModule(config.getValue('modules', 'frontend'))
 
 backend  = backendModule.Backend(config)
-frontend = frontendModule.Frontend(config, backend)
+frontend = frontendModule.Frontend(config)
+
+frontend.setBackend(backend)
+backend.setFrontend(frontend)
 
 frontend.run()
 
