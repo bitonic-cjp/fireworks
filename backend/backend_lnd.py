@@ -107,20 +107,35 @@ class Backend(Backend_Base):
             except grpc.RpcError as e:
                 state = e._state
                 if state.code == grpc.StatusCode.UNKNOWN:
-                    pass #already unlocked
+                    pass #locked, passphrase is incorrect (expected)
                 elif state.code == grpc.StatusCode.UNIMPLEMENTED:
-                    needsUnlock = False
+                    needsUnlock = False #already unlocked
                 elif state.code == grpc.StatusCode.UNAVAILABLE:
-                    return False #tryToConnect fails
+                    return False #no connection
                 else:
                     raise #unexpected
 
             if needsUnlock:
-                password = self.frontend.getPassword('Wallet passphrase:')
+                #Repeat until the user enters a valid passphrase:
+                while True:
+                    password = self.frontend.getPassword('Wallet passphrase:')
+                    if password is None: #cancel - try without a passphrase
+                        break
 
-                if password is not None:
-                    request = ln.UnlockWalletRequest(wallet_password=password)
-                    unlocker.UnlockWallet(request)
+                    try:
+                        request = ln.UnlockWalletRequest(wallet_password=password)
+                        unlocker.UnlockWallet(request)
+                    except grpc.RpcError as e:
+                        state = e._state
+                        if state.code == grpc.StatusCode.UNKNOWN:
+                            #passphrase is incorrect
+                            self.frontend.showError(e.details())
+                            continue
+                        else:
+                            raise #unexpected
+
+                    #No exception - quit the loop
+                    break
 
             #Re-open channel after unlock attempt:
             self.channel = grpc.secure_channel(

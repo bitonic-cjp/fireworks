@@ -17,7 +17,7 @@
 
 import sys
 import logging
-from PyQt5.QtWidgets import QApplication, QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QLineEdit
+from PyQt5.QtWidgets import QApplication, QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QLineEdit, QMessageBox
 
 from .qt.mainwindow import MainWindow
 from .qt import updatesignal
@@ -90,6 +90,14 @@ class Frontend:
             return None
 
         return dialog.getAnswer().encode()
+
+
+    def showError(self, message):
+        '''
+        Arguments:
+            message: str
+        '''
+        QMessageBox.critical(self.ex, 'Error', message)
 
 
 
