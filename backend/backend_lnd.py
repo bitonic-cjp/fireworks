@@ -394,7 +394,14 @@ class Backend(Backend_Base):
                     channels = []
                     )
 
-        return list(peerDict.values())
+        ret = list(peerDict.values())
+        for peer in ret:
+            nodeInfo = self.runCommandLowLevel('GetNodeInfo', pub_key=peer.peerID)
+            nodeInfo = nodeInfo.node
+            peer.alias = nodeInfo.alias
+            peer.color = nodeInfo.color[1:] #remove '#'
+
+        return ret
 
 
     def getInvoices(self):
