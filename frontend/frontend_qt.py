@@ -17,10 +17,38 @@
 
 import sys
 import logging
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QLineEdit
 
 from .qt.mainwindow import MainWindow
 from .qt import updatesignal
+
+
+
+class QuestionDialog(QDialog):
+    def __init__(self, parent, question, isPassword=False):
+        super().__init__(parent)
+
+        layout = QVBoxLayout()
+
+        label = QLabel(question, self)
+        layout.addWidget(label)
+
+        self.lineEdit = QLineEdit(self)
+        if isPassword:
+            self.lineEdit.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.lineEdit)
+
+        self.dialogButtons = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.dialogButtons.accepted.connect(self.accept)
+        self.dialogButtons.rejected.connect(self.reject)
+        layout.addWidget(self.dialogButtons)
+
+        self.setLayout(layout)
+
+
+    def getAnswer(self):
+        return self.lineEdit.text()
 
 
 
@@ -28,6 +56,7 @@ class Frontend:
     def __init__(self, config):
         logging.info('Using Qt front-end')
         self.config = config
+        self.ex = None
 
 
     def setBackend(self, backend):
@@ -41,7 +70,7 @@ class Frontend:
 
         self.backend.startup()
 
-        ex = MainWindow(self.config, self.backend)
+        self.ex = MainWindow(self.config, self.backend)
         updatesignal.initTimer()
         updatesignal.setUpdateInterval(1000)
 
@@ -55,7 +84,18 @@ class Frontend:
             question: str
         Returns: bytes
         '''
-        return input(question).encode()
+
+        try:
+            updatesignal.setTimerEnabled(False)
+
+            dialog = QuestionDialog(self.ex, question, isPassword=True)
+            if(dialog.exec() != dialog.Accepted):
+                return None
+
+            return dialog.getAnswer().encode()
+
+        finally:
+            updatesignal.setTimerEnabled(True)
 
 
 

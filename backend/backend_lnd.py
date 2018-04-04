@@ -76,7 +76,6 @@ class Backend(Backend_Base):
 
         self.channel = None
         self.rpc = None
-        self.tryToConnect()
 
 
     def tryToConnect(self):
