@@ -206,7 +206,16 @@ class Backend(Backend_Base):
     def runCommandLowLevel(self, cmd, **kwargs):
         try:
             method = getattr(self.rpc, cmd)
-            requestType = getattr(ln, cmd + 'Request')
+            try:
+                #These are the exceptions. The general rule is in the
+                #exception handler. :-S
+                requestTypeName = \
+                {
+                'GetNodeInfo': 'NodeInfoRequest',
+                }[cmd]
+            except KeyError:
+                requestTypeName = cmd + 'Request'
+            requestType = getattr(ln, requestTypeName)
         except AttributeError:
             raise Backend.CommandFailed('Command does not exist')
 
