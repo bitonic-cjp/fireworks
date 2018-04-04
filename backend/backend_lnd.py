@@ -263,7 +263,8 @@ class Backend(Backend_Base):
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+        info = self.runCommandLowLevel('GetInfo')
+        return list(info.uris)
 
 
     def getNonChannelFunds(self):
@@ -337,7 +338,54 @@ class Backend(Backend_Base):
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+        peerDict = {}
+
+        #Pending channels
+        pendingChannels = self.runCommandLowLevel('PendingChannels')
+        pendingChannels = \
+            list(pendingChannels.pending_open_channels) + \
+            list(pendingChannels.pending_closing_channels) + \
+            list(pendingChannels.pending_force_closing_channels)
+        #TODO: process pending channels
+
+        #Open channels
+        openChannels = self.runCommandLowLevel('ListChannels')
+        openChannels = openChannels.channels
+        for chn in openChannels:
+            peerID = chn.remote_pubkey
+            channel = Channel(
+                state          = 'active' if chn.active else 'inactive',
+                operational    = chn.active,
+                fundingTxID    = chn.channel_point,
+                ownFunds       = 1000 * chn.local_balance,
+                lockedIncoming = 0, #TODO
+                lockedOutgoing = 0, #TODO
+                peerFunds      = 1000 * chn.remote_balance,
+                )
+            if peerID in peerDict:
+                peerDict[peerID].channels.append(channel)
+            else:
+                peerDict[peerID] = Peer(
+                    peerID = peerID,
+                    connected = False, #to be overwritten later if True
+                    channels = [channel]
+                    )
+
+        peers = self.runCommandLowLevel('ListPeers')
+        for p in peers.peers:
+            peerID = p.pub_key
+            if peerID in peerDict:
+                #Connected peers have channels
+                peerDict[peerID].connected = True
+            else:
+                #Connected peers that don't have any channels
+                peerDict[peerID] = Peer(
+                    peerID = peerID,
+                    connected = True,
+                    channels = []
+                    )
+
+        return list(peerDict.values())
 
 
     def getInvoices(self):
