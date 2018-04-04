@@ -77,6 +77,7 @@ class Backend(Backend_Base):
 
         self.channel = None
         self.rpc = None
+        self.nativeCurrency = None
         self.connectInProgress = False
 
 
@@ -144,6 +145,9 @@ class Backend(Backend_Base):
                 self.creds)
 
             self.rpc = lnrpc.LightningStub(self.channel)
+
+            self.updateNativeCurrencyCache()
+
             return True
         finally:
             self.connectInProgress = False
@@ -229,6 +233,18 @@ class Backend(Backend_Base):
         return response
 
 
+    def updateNativeCurrencyCache(self):
+        info = self.runCommandLowLevel('GetInfo')
+        self.nativeCurrency = \
+        {
+        ('bitcoin', False): 'bc',
+        ('bitcoin', True): 'tb',
+        ('litecoin', False): 'ltc',
+        ('litecoin', True): 'ltct',
+        }[(info.chains[0], info.testnet)]
+
+
+    @manageConnection
     def getNativeCurrency(self):
         '''
         Arguments:
@@ -237,7 +253,7 @@ class Backend(Backend_Base):
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+        return self.nativeCurrency
 
 
     def getNodeLinks(self):
@@ -264,7 +280,17 @@ class Backend(Backend_Base):
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+
+        #For now, we can not determine individual on-chain transactions.
+        #Construct some fake transactions based on the reported totals:
+        balance = self.runCommandLowLevel('WalletBalance')
+        confirmed = balance.confirmed_balance
+        unconfirmed = balance.total_balance - balance.confirmed_balance
+        return \
+        {
+        ('unconfirmed', 0): (1000*unconfirmed, False),
+        ('confirmed', 0)  : (1000*confirmed  , True)
+        }
 
 
     def getChannelFunds(self):
@@ -277,7 +303,30 @@ class Backend(Backend_Base):
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+
+        ret = {}
+
+        pendingChannels = self.runCommandLowLevel('PendingChannels')
+        pendingChannels = \
+            list(pendingChannels.pending_open_channels) + \
+            list(pendingChannels.pending_closing_channels) + \
+            list(pendingChannels.pending_force_closing_channels)
+        #TODO: process pending channels
+
+        openChannels = self.runCommandLowLevel('ListChannels')
+        openChannels = openChannels.channels
+        for chn in openChannels:
+            ret[chn.channel_point] = Channel(
+                state          = 'active' if chn.active else 'inactive',
+                operational    = chn.active,
+                fundingTxID    = chn.channel_point,
+                ownFunds       = 1000 * chn.local_balance,
+                lockedIncoming = 0, #TODO
+                lockedOutgoing = 0, #TODO
+                peerFunds      = 1000 * chn.remote_balance,
+                )
+
+        return ret
 
 
     def getPeers(self):
