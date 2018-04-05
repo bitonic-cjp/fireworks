@@ -522,7 +522,10 @@ class Backend(Backend_Base):
             Backend.CommandFailed: the command failed
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+        self.runCommandLowLevel('OpenChannel',
+            node_pubkey = peerID.encode(),
+            local_funding_amount = amount // 1000
+            )
 
 
     def closeChannel(self, fundingTxID):
