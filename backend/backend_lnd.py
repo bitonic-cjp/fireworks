@@ -233,8 +233,8 @@ class Backend(Backend_Base):
                 raise Backend.CommandFailed('Command failed: ' + str(e))
 
             if state.code == grpc.StatusCode.UNIMPLEMENTED:
-                raise Backend.CommandFailed(
-                    'Command failed: wallet seems to be locked')
+                raise Backend.NotConnected(
+                    'The wallet seems to be locked')
             else:
                 raise Backend.CommandFailed('Command failed: ' + str(e))
 
