@@ -19,6 +19,7 @@ import logging
 import os
 import codecs
 import json
+import time
 
 import grpc
 
@@ -102,11 +103,14 @@ class Backend(Backend_Base):
             #This will fail with StatusCode.UNKNOWN otherwise
             needsUnlock = True
             try:
+                logging.debug('> LND RPC UnlockWallet (invalid)')
                 request = ln.UnlockWalletRequest(
                     wallet_password='Invalid passphrase'.encode()
                     )
                 unlocker.UnlockWallet(request)
+                logging.debug('< LND RPC UnlockWallet (invalid)')
             except grpc.RpcError as e:
+                logging.debug('< LND RPC UnlockWallet (invalid): ' + str(e))
                 state = e._state
                 if state.code == grpc.StatusCode.UNKNOWN:
                     pass #locked, passphrase is incorrect (expected)
@@ -125,9 +129,12 @@ class Backend(Backend_Base):
                         break
 
                     try:
+                        logging.debug('> LND RPC UnlockWallet')
                         request = ln.UnlockWalletRequest(wallet_password=password)
                         unlocker.UnlockWallet(request)
+                        logging.debug('< LND RPC UnlockWallet')
                     except grpc.RpcError as e:
+                        logging.debug('< LND RPC UnlockWallet: ' + str(e))
                         state = e._state
                         if state.code == grpc.StatusCode.UNKNOWN:
                             #passphrase is incorrect
@@ -146,7 +153,18 @@ class Backend(Backend_Base):
 
             self.rpc = lnrpc.LightningStub(self.channel)
 
-            self.updateNativeCurrencyCache()
+            try:
+                self.updateNativeCurrencyCache()
+            except Backend.NotConnected:
+                #For now, the RPC fails for us.
+                #In practice, it turns out it will become available in a few
+                #seconds.
+                #This is OK: Fireworks will automatically retry to connect,
+                #so this method will be called again until it succeeds.
+                #For now, consider ourselves 'not connected':
+                self.rpc = None
+                self.channel = None
+                return False
 
             return True
         finally:
@@ -222,11 +240,14 @@ class Backend(Backend_Base):
         request = requestType(**kwargs)
 
         try:
+            logging.debug('> LND RPC ' + cmd)
             if self.macaroon is None:
                 response = method(request)
             else:
                 response = method(request, metadata=[('macaroon', self.macaroon)])
+            logging.debug('< LND RPC ' + cmd)
         except grpc.RpcError as e:
+            logging.debug('< LND RPC %s: %s' % (cmd, str(e)))
             try:
                 state = e._state
             except AttributeError:
@@ -235,6 +256,9 @@ class Backend(Backend_Base):
             if state.code == grpc.StatusCode.UNIMPLEMENTED:
                 raise Backend.NotConnected(
                     'The wallet seems to be locked')
+            elif state.code == grpc.StatusCode.UNAVAILABLE:
+                raise Backend.NotConnected(
+                    'The command is unavailable')
             else:
                 raise Backend.CommandFailed('Command failed: ' + str(e))
 
