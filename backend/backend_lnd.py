@@ -503,7 +503,12 @@ class Backend(Backend_Base):
             Backend.CommandFailed: the command failed (e.g. invalid link, or connection failure)
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+        peerID, host = link.split('@')
+        address = ln.LightningAddress(
+	        pubkey = peerID,
+	        host = host
+            )
+        self.runCommandLowLevel('ConnectPeer', addr=address, perm=True)
 
 
     def makeChannel(self, peerID, amount):
