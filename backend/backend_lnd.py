@@ -245,6 +245,14 @@ class Backend(Backend_Base):
                 response = method(request)
             else:
                 response = method(request, metadata=[('macaroon', self.macaroon)])
+
+            #In case the response is iterable, assume it is a stream.
+            #Retrieve all contents of the stream:
+            try:
+                response = [x for x in response]
+            except TypeError:
+                pass #response was not iterable
+
             logging.debug('< LND RPC %s = %s' % (cmd, str(response)))
         except grpc.RpcError as e:
             logging.debug('< LND RPC %s: %s' % (cmd, str(e)))
