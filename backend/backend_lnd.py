@@ -341,11 +341,23 @@ class Backend(Backend_Base):
         ret = {}
 
         pendingChannels = self.runCommandLowLevel('PendingChannels')
-        pendingChannels = \
-            list(pendingChannels.pending_open_channels) + \
-            list(pendingChannels.pending_closing_channels) + \
-            list(pendingChannels.pending_force_closing_channels)
-        #TODO: process pending channels
+        for (cList, state) in \
+            [
+            (pendingChannels.pending_open_channels, 'opening'),
+            (pendingChannels.pending_closing_channels, 'closing'),
+            (pendingChannels.pending_force_closing_channels, 'force-closing'),
+            ]:
+            for chn in cList:
+                chn = chn.channel
+                ret[chn.channel_point] = Channel(
+                    state          = state,
+                    operational    = True, #TODO
+                    fundingTxID    = chn.channel_point,
+                    ownFunds       = 1000 * chn.local_balance,
+                    lockedIncoming = 0, #TODO
+                    lockedOutgoing = 0, #TODO
+                    peerFunds      = 1000 * chn.remote_balance,
+                    )
 
         openChannels = self.runCommandLowLevel('ListChannels')
         openChannels = openChannels.channels
