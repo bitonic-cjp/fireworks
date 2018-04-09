@@ -18,6 +18,7 @@
 import logging
 import os
 import codecs
+import binascii
 import json
 import time
 
@@ -567,8 +568,9 @@ class Backend(Backend_Base):
             Backend.CommandFailed: the command failed
             Backend.NotConnected: not connected to the backend
         '''
+        peerID_binary = binascii.unhexlify(peerID)
         self.runCommandLowLevel('OpenChannel',
-            node_pubkey = peerID.encode(),
+            node_pubkey = peerID_binary,
             local_funding_amount = amount // 1000
             )
 
