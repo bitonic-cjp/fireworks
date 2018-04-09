@@ -387,7 +387,7 @@ class Backend(Backend_Base):
         for chn in openChannels:
             peerID = chn.remote_pubkey
             channel = Channel(
-                state          = 'active' if chn.active else 'inactive',
+                state          = 'open',
                 operational    = chn.active,
                 fundingTxID    = chn.channel_point,
                 ownFunds       = 1000 * chn.local_balance,
