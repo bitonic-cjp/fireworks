@@ -245,7 +245,7 @@ class Backend(Backend_Base):
                 response = method(request)
             else:
                 response = method(request, metadata=[('macaroon', self.macaroon)])
-            logging.debug('< LND RPC ' + cmd)
+            logging.debug('< LND RPC %s = %s' % (cmd, str(response)))
         except grpc.RpcError as e:
             logging.debug('< LND RPC %s: %s' % (cmd, str(e)))
             try:
