@@ -24,11 +24,23 @@ import configparser
 class Configuration:
     def __init__(self):
         self.loadDefaults()
-        self.loadFile('~/.fireworks/config')
+        self.getConfFileFromCommandline()
+        self.loadFile(self.confFile)
         self.readCommandline()
 
 
+    def getConfFileFromCommandline(self):
+        for arg in sys.argv[1:]:
+            try:
+                name, value = arg.split('=')
+                if name == 'conffile':
+                    self.confFile = value
+            except ValueError:
+                continue #different syntax - ignore
+
+
     def loadDefaults(self):
+        self.confFile = '~/.fireworks/config'
         self.sections = \
         {
         'modules':
