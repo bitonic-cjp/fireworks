@@ -240,7 +240,7 @@ class Backend(Backend_Base):
         request = requestType(**kwargs)
 
         try:
-            logging.debug('> LND RPC ' + cmd)
+            logging.debug('> LND RPC %s %s' % (cmd, str(kwargs)))
             if self.macaroon is None:
                 response = method(request)
             else:
