@@ -454,11 +454,14 @@ class Backend(Backend_Base):
 
         ret = list(peerDict.values())
         for peer in ret:
-            nodeInfo = self.runCommandLowLevel('GetNodeInfo', pub_key=peer.peerID)
-            nodeInfo = nodeInfo.node
-            peer.alias = nodeInfo.alias
-            peer.color = nodeInfo.color[1:] #remove '#'
-
+            try:
+                nodeInfo = self.runCommandLowLevel('GetNodeInfo', pub_key=peer.peerID)
+                nodeInfo = nodeInfo.node
+                peer.alias = nodeInfo.alias
+                peer.color = nodeInfo.color[1:] #remove '#'
+            except Backend.CommandFailed:
+                peer.alias = 'unknown'
+                peer.color = '888888'
         return ret
 
 
