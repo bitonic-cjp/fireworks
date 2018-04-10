@@ -220,7 +220,9 @@ class Backend(Backend_Base):
             lockedOut = 0 #TODO
             theirs = total - ours - lockedIn - lockedOut
             ret.append(Channel(
-                channelID = Backend.ChannelID(), #TODO: add peerID
+                channelID = Backend.ChannelID(
+                    peerID = c['peer_id']
+                    ),
                 ownFunds = ours,
                 lockedIncoming = lockedIn,
                 lockedOutgoing = lockedOut,
