@@ -605,6 +605,7 @@ class Backend(Backend_Base):
         stream.next()
 
 
+    @translateRPCExceptions
     def closeChannel(self, channelID):
         '''
         Arguments:
@@ -618,9 +619,13 @@ class Backend(Backend_Base):
             funding_txid_str = channelID.txID,
             output_index = channelID.outputIndex
             )
-        self.runCommandLowLevel('CloseChannel',
+        stream = self.runCommandLowLevel('CloseChannel',
             channel_point = channelPoint
             )
+
+        #Get one message from the stream, so we can catch exceptions.
+        stream.next()
+
 
 
 #On loading the module, set the TLS ciphers that are used by LND:
