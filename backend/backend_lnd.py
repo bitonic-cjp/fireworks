@@ -45,6 +45,27 @@ def manageConnection(method):
     return newMethod
 
 
+def translateRPCExceptions(method):
+    def newMethod(self, *args, **kwargs):
+        try:
+            return method(self, *args, **kwargs)
+        except grpc.RpcError as e:
+            try:
+                state = e._state
+            except AttributeError:
+                raise Backend.CommandFailed('Command failed: ' + str(e))
+
+            if state.code == grpc.StatusCode.UNIMPLEMENTED:
+                raise Backend.NotConnected(
+                    'The wallet seems to be locked')
+            elif state.code == grpc.StatusCode.UNAVAILABLE:
+                raise Backend.NotConnected(
+                    'The command is unavailable')
+            else:
+                raise Backend.CommandFailed('Command failed: ' + str(e))
+
+    return newMethod
+
 
 class Backend(Backend_Base):
     def __init__(self, config):
@@ -222,6 +243,7 @@ class Backend(Backend_Base):
 
 
     @manageConnection
+    @translateRPCExceptions
     def runCommandLowLevel(self, cmd, **kwargs):
         try:
             method = getattr(self.rpc, cmd)
@@ -247,30 +269,10 @@ class Backend(Backend_Base):
             else:
                 response = method(request, metadata=[('macaroon', self.macaroon)])
 
-            #In case the response is iterable, assume it is a stream.
-            #Retrieve all contents of the stream:
-            try:
-                response = [x for x in response]
-            except TypeError:
-                pass #response was not iterable
-
             logging.debug('< LND RPC %s = %s' % (cmd, str(response)))
-        except grpc.RpcError as e:
+        except Exception as e:
             logging.debug('< LND RPC %s: %s' % (cmd, str(e)))
-            try:
-                state = e._state
-            except AttributeError:
-                raise Backend.CommandFailed('Command failed: ' + str(e))
-
-            if state.code == grpc.StatusCode.UNIMPLEMENTED:
-                raise Backend.NotConnected(
-                    'The wallet seems to be locked')
-            elif state.code == grpc.StatusCode.UNAVAILABLE:
-                raise Backend.NotConnected(
-                    'The command is unavailable')
-            else:
-                raise Backend.CommandFailed('Command failed: ' + str(e))
-
+            raise
 
         return response
 
@@ -557,6 +559,7 @@ class Backend(Backend_Base):
         self.runCommandLowLevel('ConnectPeer', addr=address, perm=True)
 
 
+    @translateRPCExceptions
     def makeChannel(self, peerID, amount):
         '''
         Arguments:
@@ -569,10 +572,13 @@ class Backend(Backend_Base):
             Backend.NotConnected: not connected to the backend
         '''
         peerID_binary = binascii.unhexlify(peerID)
-        self.runCommandLowLevel('OpenChannel',
+        stream = self.runCommandLowLevel('OpenChannel',
             node_pubkey = peerID_binary,
             local_funding_amount = amount // 1000
             )
+
+        #Get one message from the stream, so we can catch exceptions.
+        stream.next()
 
 
     def closeChannel(self, fundingTxID):
