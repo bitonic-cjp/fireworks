@@ -259,7 +259,8 @@ class Backend(Backend_Base):
                 #exception handler. :-S
                 requestTypeName = \
                 {
-                'GetNodeInfo': 'NodeInfoRequest',
+                'GetNodeInfo' : 'NodeInfoRequest',
+                'ListInvoices': 'ListInvoiceRequest',
                 }[cmd]
             except KeyError:
                 requestTypeName = cmd + 'Request'
@@ -508,7 +509,27 @@ class Backend(Backend_Base):
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+        invoices = self.runCommandLowLevel('ListInvoices')
+        ret = []
+
+        for inv in invoices.invoices:
+            expirationTime = inv.creation_date + inv.expiry
+            if inv.settled:
+                status = 'paid'
+            elif expirationTime < time.time():
+                status = 'expired'
+            else:
+                status = 'pending'
+
+            ret.append(Invoice(
+                amount = 1000 * inv.value,
+                currency = self.getNativeCurrency(), #TODO
+                label = inv.memo,
+                expirationTime = expirationTime,
+                status = status
+                ))
+
+        return ret
 
 
     def getPayments(self):
