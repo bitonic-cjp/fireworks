@@ -180,13 +180,13 @@ class ChannelsInScroll(QWidget):
                 label.setEnabled(c.operational)
                 self.layout.addWidget(label, currentRow, 2)
 
-                def makeCloseChannelHandler(self, peer, fundingTxID):
+                def makeCloseChannelHandler(self, peer, channelID):
                     def closeChannelHandler():
-                        return self.onCloseChannel(peer, fundingTxID)
+                        return self.onCloseChannel(peer, channelID)
                     return closeChannelHandler
                 button = QPushButton('Close', self)
                 button.clicked.connect(makeCloseChannelHandler(
-                    self, peer, c.fundingTxID
+                    self, peer, c.channelID
                     ))
                 button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
                 self.layout.addWidget(button, currentRow, 3)
@@ -223,12 +223,12 @@ class ChannelsInScroll(QWidget):
             return
 
 
-    def onCloseChannel(self, peer, fundingTxID):
+    def onCloseChannel(self, peer, channelID):
         #TODO: ask the user for confirmation
         #alias = peer.alias
 
         try:
-            self.backend.closeChannel(fundingTxID)
+            self.backend.closeChannel(channelID)
             updatesignal.update()
         except self.backend.CommandFailed as e:
             QMessageBox.critical(self, 'Failed to close the channel',

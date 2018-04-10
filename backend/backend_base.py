@@ -51,9 +51,9 @@ class Payment(Struct):
 
 
 class Channel(Struct):
+    channelID      = None #Backend.ChannelID
     state          = None #str
     operational    = None #bool
-    fundingTxID    = None #str
     ownFunds       = None #int, mSatoshi
     lockedIncoming = None #int, mSatoshi
     lockedOutgoing = None #int, mSatoshi

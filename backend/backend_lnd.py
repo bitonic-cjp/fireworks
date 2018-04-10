@@ -24,6 +24,8 @@ import time
 
 import grpc
 
+from utils.struct import Struct
+
 from .lnd import rpc_pb2 as ln
 from .lnd import rpc_pb2_grpc as lnrpc
 
@@ -68,6 +70,11 @@ def translateRPCExceptions(method):
 
 
 class Backend(Backend_Base):
+    class ChannelID(Struct):
+        txID = None        #str
+        outputIndex = None #int
+
+
     def __init__(self, config):
         logging.info('Using LND back-end')
         self.config = config
@@ -363,10 +370,14 @@ class Backend(Backend_Base):
             ]:
             for chn in cList:
                 chn = chn.channel
+                txID, index = chn.channel_point.split(':')
                 ret[chn.channel_point] = Channel(
+                    channelID      = Backend.ChannelID(
+                    txID           = txID,
+                    outputIndex    = int(index)
+                        ),
                     state          = state,
                     operational    = True, #TODO
-                    fundingTxID    = chn.channel_point,
                     ownFunds       = 1000 * chn.local_balance,
                     lockedIncoming = 0, #TODO
                     lockedOutgoing = 0, #TODO
@@ -376,10 +387,14 @@ class Backend(Backend_Base):
         openChannels = self.runCommandLowLevel('ListChannels')
         openChannels = openChannels.channels
         for chn in openChannels:
+            txID, index = chn.channel_point.split(':')
             ret[chn.channel_point] = Channel(
+                channelID      = Backend.ChannelID(
+                    txID           = txID,
+                    outputIndex    = int(index)
+                    ),
                 state          = 'active' if chn.active else 'inactive',
                 operational    = chn.active,
-                fundingTxID    = chn.channel_point,
                 ownFunds       = 1000 * chn.local_balance,
                 lockedIncoming = 0, #TODO
                 lockedOutgoing = 0, #TODO
@@ -410,10 +425,14 @@ class Backend(Backend_Base):
             for chn in cList:
                 chn = chn.channel
                 peerID = chn.remote_node_pub
+                txID, index = chn.channel_point.split(':')
                 channel = Channel(
+                    channelID      = Backend.ChannelID(
+                        txID           = txID,
+                        outputIndex    = int(index)
+                        ),
                     state          = state,
                     operational    = True, #TODO
-                    fundingTxID    = chn.channel_point,
                     ownFunds       = 1000 * chn.local_balance,
                     lockedIncoming = 0, #TODO
                     lockedOutgoing = 0, #TODO
@@ -434,10 +453,14 @@ class Backend(Backend_Base):
         openChannels = openChannels.channels
         for chn in openChannels:
             peerID = chn.remote_pubkey
+            txID, index = chn.channel_point.split(':')
             channel = Channel(
+                channelID      = Backend.ChannelID(
+                    txID           = txID,
+                    outputIndex    = int(index)
+                    ),
                 state          = 'open',
                 operational    = chn.active,
-                fundingTxID    = chn.channel_point,
                 ownFunds       = 1000 * chn.local_balance,
                 lockedIncoming = 0, #TODO
                 lockedOutgoing = 0, #TODO
@@ -584,16 +607,22 @@ class Backend(Backend_Base):
         stream.next()
 
 
-    def closeChannel(self, fundingTxID):
+    def closeChannel(self, channelID):
         '''
         Arguments:
-            fundingTxID: str
+            channelID: ChannelID
         Returns: None
         Exceptions:
             Backend.CommandFailed: the command failed
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+        channelPoint = ln.ChannelPoint(
+            funding_txid_str = channelID.txID,
+            output_index = channelID.outputIndex
+            )
+        self.runCommandLowLevel('CloseChannel',
+            channel_point = channelPoint
+            )
 
 
 #On loading the module, set the TLS ciphers that are used by LND:

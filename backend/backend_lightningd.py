@@ -19,6 +19,8 @@ import os.path
 import logging
 import json
 
+from utils.struct import Struct
+
 from .backend_base import Invoice, InvoiceData, Payment, Channel, Peer
 from .backend_base import Backend as Backend_Base
 from .lightningd.lightning import LightningRpc
@@ -36,6 +38,10 @@ def translateRPCExceptions(method):
 
 
 class Backend(Backend_Base):
+    class ChannelID(Struct):
+        peerID = None #str
+
+
     def __init__(self, config):
         logging.info('Using Lightningd back-end')
         self.config = config
@@ -207,6 +213,7 @@ class Backend(Backend_Base):
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
+        #TODO: change API to list, get rid of TxID
         channels = self.rpc.listfunds()['channels']
         ret = {}
         for c in channels:
@@ -217,7 +224,7 @@ class Backend(Backend_Base):
             lockedOut = 0 #TODO
             theirs = total - ours - lockedIn - lockedOut
             ret[txID] = Channel(
-                fundingTxID = txID,
+                channelID = Backend.ChannelID(), #TODO: add peerID
                 ownFunds = ours,
                 lockedIncoming = lockedIn,
                 lockedOutgoing = lockedOut,
@@ -266,9 +273,9 @@ class Backend(Backend_Base):
                     theirs = total - ours - lockedIn - lockedOut
 
                     channels.append(Channel(
+                        channelID=Backend.ChannelID(peerID=p['id']),
                         state=state,
                         operational=operational,
-                        fundingTxID=c['funding_txid'],
                         ownFunds=ours,
                         lockedIncoming=lockedIn,
                         lockedOutgoing=lockedOut,
@@ -451,29 +458,17 @@ class Backend(Backend_Base):
 
 
     @translateRPCExceptions
-    def closeChannel(self, fundingTxID):
+    def closeChannel(self, channelID):
         '''
         Arguments:
-            fundingTxID: str
+            channelID: ChannelID
         Returns: None
         Exceptions:
             Backend.CommandFailed: the command failed
             Backend.NotConnected: not connected to the backend
         '''
         try:
-            peerID = None
-            for p in self.rpc.listpeers()['peers']:
-                txIDs = []
-                if 'channels' in p:
-                    txIDs = [c['funding_txid'] for c in p['channels']]
-                    if fundingTxID in txIDs:
-                        peerID = p['id']
-                        break
-            if peerID is None:
-                raise Backend.CommandFailed(
-                    'Funding transaction ID not found')
-
-            self.rpc.close(peerID)
+            self.rpc.close(channelID.peerID)
         except ValueError as e:
             raise Backend.CommandFailed(str(e))
 
