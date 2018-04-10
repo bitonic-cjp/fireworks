@@ -260,7 +260,10 @@ class Backend(Backend_Base):
         except AttributeError:
             raise Backend.CommandFailed('Command does not exist')
 
-        request = requestType(**kwargs)
+        try:
+            request = requestType(**kwargs)
+        except ValueError as e:
+            raise Backend.CommandFailed('Could not run the command: ' + str(e))
 
         try:
             logging.debug('> LND RPC %s %s' % (cmd, str(kwargs)))
