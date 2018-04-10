@@ -206,30 +206,26 @@ class Backend(Backend_Base):
     def getChannelFunds(self):
         '''
         Arguments:
-        Returns: dict(str->Channel)
+        Returns: list(Channel)
             The channel funds.
-            Each key consists of:
-                funding txID
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
-        #TODO: change API to list, get rid of TxID
         channels = self.rpc.listfunds()['channels']
-        ret = {}
+        ret = []
         for c in channels:
-            txID = c['funding_txid']
             ours =  1000*c['channel_sat']       #TODO: actual resolution
             total = 1000*c['channel_total_sat'] #TODO: actual resolution
             lockedIn = 0 #TODO
             lockedOut = 0 #TODO
             theirs = total - ours - lockedIn - lockedOut
-            ret[txID] = Channel(
+            ret.append(Channel(
                 channelID = Backend.ChannelID(), #TODO: add peerID
                 ownFunds = ours,
                 lockedIncoming = lockedIn,
                 lockedOutgoing = lockedOut,
                 peerFunds = theirs
-                )
+                ))
         return ret
 
 

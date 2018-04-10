@@ -351,15 +351,13 @@ class Backend(Backend_Base):
     def getChannelFunds(self):
         '''
         Arguments:
-        Returns: dict(str->Channel)
+        Returns: list(>Channel)
             The channel funds.
-            Each key consists of:
-                funding txID
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
 
-        ret = {}
+        ret = []
 
         pendingChannels = self.runCommandLowLevel('PendingChannels')
         for (cList, state) in \
@@ -371,7 +369,7 @@ class Backend(Backend_Base):
             for chn in cList:
                 chn = chn.channel
                 txID, index = chn.channel_point.split(':')
-                ret[chn.channel_point] = Channel(
+                ret.append(Channel(
                     channelID      = Backend.ChannelID(
                     txID           = txID,
                     outputIndex    = int(index)
@@ -382,13 +380,13 @@ class Backend(Backend_Base):
                     lockedIncoming = 0, #TODO
                     lockedOutgoing = 0, #TODO
                     peerFunds      = 1000 * chn.remote_balance,
-                    )
+                    ))
 
         openChannels = self.runCommandLowLevel('ListChannels')
         openChannels = openChannels.channels
         for chn in openChannels:
             txID, index = chn.channel_point.split(':')
-            ret[chn.channel_point] = Channel(
+            ret.append(Channel(
                 channelID      = Backend.ChannelID(
                     txID           = txID,
                     outputIndex    = int(index)
@@ -399,7 +397,7 @@ class Backend(Backend_Base):
                 lockedIncoming = 0, #TODO
                 lockedOutgoing = 0, #TODO
                 peerFunds      = 1000 * chn.remote_balance,
-                )
+                ))
 
         return ret
 

@@ -142,10 +142,10 @@ class Overview(QWidget):
         confirmed   = sum(x[0] for x in nonChannelFunds.values() if x[1])
         unconfirmed = sum(x[0] for x in nonChannelFunds.values() if not x[1])
 
-        ours        = sum(x.ownFunds       for x in channelFunds.values())
-        lockedIn    = sum(x.lockedIncoming for x in channelFunds.values())
-        lockedOut   = sum(x.lockedOutgoing for x in channelFunds.values())
-        theirs      = sum(x.peerFunds      for x in channelFunds.values())
+        ours        = sum(x.ownFunds       for x in channelFunds)
+        lockedIn    = sum(x.lockedIncoming for x in channelFunds)
+        lockedOut   = sum(x.lockedOutgoing for x in channelFunds)
+        theirs      = sum(x.peerFunds      for x in channelFunds)
 
         total = ours + confirmed + unconfirmed
 
