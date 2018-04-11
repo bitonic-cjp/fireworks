@@ -115,9 +115,9 @@ class ShowInvoiceDialog(QDialog):
         for invoice in invoices:
             if invoice.label == self.label:
                 self.amountLabel.setText(
-                    formatting.formatAmount(invoice.amount, invoice.currency))
+                    formatting.formatAmount(invoice.data.amount, invoice.data.currency))
                 self.expirationLabel.setText(
-                    formatting.formatTimestamp(invoice.expirationTime))
+                    formatting.formatTimestamp(invoice.data.expirationTime))
                 self.statusLabel.setText(invoice.status)
 
                 #TODO: grey out the dialog if the invoice is expired
