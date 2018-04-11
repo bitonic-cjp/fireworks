@@ -129,7 +129,7 @@ class Invoices(QWidget):
         detailLayout = QGridLayout()
         layout.addLayout(detailLayout, 0)
 
-        labels = ['Expiration date:', 'Label:', 'Amount:', 'Status:', 'Description:']
+        labels = ['Expiration date:', 'Label:', 'Amount:', 'Status:', 'Description:', 'Invoice code:']
         for i, txt in enumerate(labels):
             label = QLabel(txt, self)
             detailLayout.addWidget(label, i, 0)
@@ -139,11 +139,13 @@ class Invoices(QWidget):
         self.amountLabel = QLabel(self)
         self.statusLabel = QLabel(self)
         self.descriptionLabel = QLabel(self)
+        self.bolt11Label = QLabel(self)
         detailLayout.addWidget(self.expirationLabel, 0, 1)
         detailLayout.addWidget(self.labelLabel, 1, 1)
         detailLayout.addWidget(self.amountLabel, 2, 1)
         detailLayout.addWidget(self.statusLabel, 3, 1)
         detailLayout.addWidget(self.descriptionLabel, 4, 1)
+        detailLayout.addWidget(self.bolt11Label, 5, 1)
 
         self.setLayout(layout)
 
@@ -162,6 +164,7 @@ class Invoices(QWidget):
             self.amountLabel.setText('')
             self.statusLabel.setText('')
             self.descriptionLabel.setText('')
+            self.bolt11Label.setText('')
 
         self.invoiceTable.updateInvoices(invoices)
         self.setEnabled(haveData)
@@ -177,6 +180,7 @@ class Invoices(QWidget):
             self.amountLabel.setText('')
             self.statusLabel.setText('')
             self.descriptionLabel.setText('')
+            self.bolt11Label.setText('')
             return
 
         row = tuple(rows)[0]
@@ -186,6 +190,7 @@ class Invoices(QWidget):
         self.amountLabel.setText(formatting.formatAmount(invoice.data.amount, invoice.data.currency))
         self.statusLabel.setText(invoice.status)
         self.descriptionLabel.setText(invoice.data.description)
+        self.bolt11Label.setText(invoice.bolt11)
 
 
     def onCreateNewInvoice(self):
