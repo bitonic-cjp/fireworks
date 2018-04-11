@@ -140,14 +140,19 @@ class Invoices(QWidget):
         self.amountLabel = QLabel(self)
         self.statusLabel = QLabel(self)
         self.descriptionLabel = QLabel(self)
-        self.bolt11Label = BigLabel('', self)
-        self.QRCode = QRCode(self)
         detailLayout.addWidget(self.expirationLabel, 0, 1)
         detailLayout.addWidget(self.labelLabel, 1, 1)
         detailLayout.addWidget(self.amountLabel, 2, 1)
         detailLayout.addWidget(self.statusLabel, 3, 1)
         detailLayout.addWidget(self.descriptionLabel, 4, 1)
+
+        self.bolt11Label = BigLabel('', self)
+        policy = self.bolt11Label.sizePolicy()
+        policy.setHorizontalPolicy(QSizePolicy.Minimum)
+        self.bolt11Label.setSizePolicy(policy)
         detailLayout.addWidget(self.bolt11Label, 5, 1)
+
+        self.QRCode = QRCode(self)
         detailLayout.addWidget(self.QRCode, 6, 0, 1, 2, Qt.AlignHCenter)
 
         self.setLayout(layout)
