@@ -29,10 +29,16 @@ from .showinvoicedialog import ShowInvoiceDialog
 
 
 class InvoiceTable(QAbstractTableModel):
-    def __init__(self, parent):
+    def __init__(self, parent, missingFields):
         super().__init__(parent)
+
+        self.showLabel = 'label' not in missingFields
+
         self.header = \
-            ['Expiration date', 'Label', 'Amount', 'Status']
+            ['Expiration date', 'Amount', 'Status']
+        if self.showLabel:
+            self.header = ['Label'] + self.header
+
         self.dataList = []
 
 
@@ -58,13 +64,17 @@ class InvoiceTable(QAbstractTableModel):
 
         invoice = self.dataList[index.row()]
         col = index.column()
+
+        if self.showLabel:
+            if col == 0:
+                return invoice.label
+            col -= 1
+
         if col == 0:
             return formatting.formatTimestamp(invoice.data.expirationTime)
         elif col == 1:
-            return invoice.label
-        elif col == 2:
             return formatting.formatAmount(invoice.data.amount, invoice.data.currency)
-        elif col == 3:
+        elif col == 2:
             return invoice.status
 
         return None
@@ -93,6 +103,8 @@ class Invoices(QWidget):
         super().__init__(parent)
         self.backend = backend
 
+        self.showLabel = 'label' not in self.backend.getMissingFields(self.backend.Invoice)
+
         layout = QHBoxLayout()
 
         #### LEFT SIDE ###
@@ -103,19 +115,27 @@ class Invoices(QWidget):
         listLayout.addWidget(newInvoiceButton, 0)
         newInvoiceButton.clicked.connect(self.onCreateNewInvoice)
 
-        self.invoiceTable = InvoiceTable(self)
+        self.invoiceTable = InvoiceTable(self, self.backend.getMissingFields(self.backend.Invoice))
         tableView = QTableView(self)
         tableView.setModel(self.invoiceTable)
         tableView.setSelectionBehavior(QTableView.SelectRows)
         tableView.setSelectionMode(QTableView.SingleSelection)
 
-        #Make all colums wide enough for their contents, except the label
-        #column. Rationale: only the label column does not have a
-        #reasonable upper bound size.
-        tableView.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeToContents)
-        tableView.horizontalHeader().setSectionResizeMode(1,
-            QHeaderView.Stretch)
+        if self.showLabel:
+            #Make all colums wide enough for their contents, except the label
+            #column. Rationale: only the label column does not have a
+            #reasonable upper bound size.
+            tableView.horizontalHeader().setSectionResizeMode(
+                QHeaderView.ResizeToContents)
+            tableView.horizontalHeader().setSectionResizeMode(0,
+                QHeaderView.Stretch)
+        else:
+            #Make all colums wide enough for their contents.
+            #Stretch the amount column.
+            tableView.horizontalHeader().setSectionResizeMode(
+                QHeaderView.ResizeToContents)
+            tableView.horizontalHeader().setSectionResizeMode(1,
+                QHeaderView.Stretch)
 
         policy = tableView.sizePolicy()
         policy.setHorizontalPolicy(QSizePolicy.Minimum)
@@ -130,18 +150,20 @@ class Invoices(QWidget):
         detailLayout = QGridLayout()
         layout.addLayout(detailLayout, 0)
 
-        labels = ['Expiration date:', 'Label:', 'Amount:', 'Status:', 'Description:', 'Invoice code:']
+        labels = ['Label:', 'Expiration date:', 'Amount:', 'Status:', 'Description:', 'Invoice code:']
+        if not self.showLabel:
+            labels[0] = ''
         for i, txt in enumerate(labels):
             label = QLabel(txt, self)
             detailLayout.addWidget(label, i, 0)
 
-        self.expirationLabel = QLabel(self)
         self.labelLabel = QLabel(self)
+        self.expirationLabel = QLabel(self)
         self.amountLabel = QLabel(self)
         self.statusLabel = QLabel(self)
         self.descriptionLabel = QLabel(self)
-        detailLayout.addWidget(self.expirationLabel, 0, 1)
-        detailLayout.addWidget(self.labelLabel, 1, 1)
+        detailLayout.addWidget(self.labelLabel, 0, 1)
+        detailLayout.addWidget(self.expirationLabel, 1, 1)
         detailLayout.addWidget(self.amountLabel, 2, 1)
         detailLayout.addWidget(self.statusLabel, 3, 1)
         detailLayout.addWidget(self.descriptionLabel, 4, 1)
@@ -195,8 +217,9 @@ class Invoices(QWidget):
 
         row = tuple(rows)[0]
         invoice = self.invoiceTable.getInvoice(row)
+        if self.showLabel:
+            self.labelLabel.setText(invoice.label)
         self.expirationLabel.setText(formatting.formatTimestamp(invoice.data.expirationTime))
-        self.labelLabel.setText(invoice.label)
         self.amountLabel.setText(formatting.formatAmount(invoice.data.amount, invoice.data.currency))
         self.statusLabel.setText(invoice.status)
         self.descriptionLabel.setText(invoice.data.description)
@@ -229,10 +252,11 @@ class Invoices(QWidget):
         if(dialog.exec() != dialog.Accepted):
             return
 
-        #These can be None if invoice creation failed:
         label = dialog.label
         bolt11 = dialog.bolt11
-        if None in (bolt11, label):
+
+        #It can be None if invoice creation failed:
+        if bolt11 is None:
             return
 
         dialog = ShowInvoiceDialog(self, self.backend, label, bolt11)

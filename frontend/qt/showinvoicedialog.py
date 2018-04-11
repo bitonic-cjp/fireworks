@@ -92,9 +92,8 @@ class ShowInvoiceDialog(QDialog):
             self.statusLabel.setText('Unknown (not connected to backend)')
             return
 
-        #TODO: don't use labels for identification: LND doesn't have them.
         for invoice in invoices:
-            if invoice.label == self.label:
+            if invoice.bolt11 == self.bolt11:
                 self.amountLabel.setText(
                     formatting.formatAmount(invoice.data.amount, invoice.data.currency))
                 self.expirationLabel.setText(

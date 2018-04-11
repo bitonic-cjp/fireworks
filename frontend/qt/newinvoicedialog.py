@@ -29,30 +29,36 @@ class NewInvoiceDialog(GenericDialog):
         super().__init__(parent, backend)
         self.backend = backend
 
+        self.showLabel = 'label' not in self.backend.getMissingFields(self.backend.Invoice)
+
         self.label = None
         self.bolt11 = None
 
         self.setWindowTitle('Create a new invoice')
         self.setErrorMessage('Failed to create a new invoice')
 
-        self.labelText = QLineEdit(invoiceLabel, self)
+        if self.showLabel:
+            self.labelText = QLineEdit(invoiceLabel, self)
+            self.addRow('Label:'      ,self.labelText)
+
         self.descriptionText = QPlainTextEdit(self)
         self.amountText = AmountInput(self, self.backend.getNativeCurrency())
         self.expiryText = DurationInput(self)
 
-        self.addRow('Label:'      ,self.labelText)
         self.addRow('Description:',self.descriptionText)
         self.addRow('Amount:'     ,self.amountText)
         self.addRow('Expires:'    , self.expiryText)
 
 
     def doCommand(self):
+        if self.showLabel:
+            self.label = self.labelText.text()
+
         self.bolt11 = self.backend.makeNewInvoice(
-            label=self.labelText.text(),
+            label=self.label,
             description=self.descriptionText.toPlainText(),
             amount=self.amountText.getValue(),
             expiry=self.expiryText.getValue()
             )
-        self.label = self.labelText.text()
         updatesignal.update()
 
