@@ -129,7 +129,7 @@ class Invoices(QWidget):
         detailLayout = QGridLayout()
         layout.addLayout(detailLayout, 0)
 
-        labels = ['Expiration date:', 'Label:', 'Amount:', 'Status:']
+        labels = ['Expiration date:', 'Label:', 'Amount:', 'Status:', 'Description:']
         for i, txt in enumerate(labels):
             label = QLabel(txt, self)
             detailLayout.addWidget(label, i, 0)
@@ -138,10 +138,12 @@ class Invoices(QWidget):
         self.labelLabel = QLabel(self)
         self.amountLabel = QLabel(self)
         self.statusLabel = QLabel(self)
+        self.descriptionLabel = QLabel(self)
         detailLayout.addWidget(self.expirationLabel, 0, 1)
         detailLayout.addWidget(self.labelLabel, 1, 1)
         detailLayout.addWidget(self.amountLabel, 2, 1)
         detailLayout.addWidget(self.statusLabel, 3, 1)
+        detailLayout.addWidget(self.descriptionLabel, 4, 1)
 
         self.setLayout(layout)
 
@@ -159,6 +161,7 @@ class Invoices(QWidget):
             self.labelLabel.setText('')
             self.amountLabel.setText('')
             self.statusLabel.setText('')
+            self.descriptionLabel.setText('')
 
         self.invoiceTable.updateInvoices(invoices)
         self.setEnabled(haveData)
@@ -173,6 +176,7 @@ class Invoices(QWidget):
             self.labelLabel.setText('')
             self.amountLabel.setText('')
             self.statusLabel.setText('')
+            self.descriptionLabel.setText('')
             return
 
         row = tuple(rows)[0]
@@ -181,6 +185,7 @@ class Invoices(QWidget):
         self.labelLabel.setText(invoice.label)
         self.amountLabel.setText(formatting.formatAmount(invoice.data.amount, invoice.data.currency))
         self.statusLabel.setText(invoice.status)
+        self.descriptionLabel.setText(invoice.data.description)
 
 
     def onCreateNewInvoice(self):
