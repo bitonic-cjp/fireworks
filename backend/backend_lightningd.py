@@ -21,7 +21,6 @@ import json
 
 from utils.struct import Struct
 
-from .backend_base import Invoice, InvoiceData, Payment, Channel, Peer
 from .backend_base import Backend as Backend_Base
 from .lightningd.lightning import LightningRpc
 
@@ -70,6 +69,18 @@ class Backend(Backend_Base):
         if self.nodeInfo is None and not self.initNodeInfo():
             raise Backend.NotConnected()
         return 'Lightningd ' + self.nodeInfo['version']
+
+
+    @staticmethod
+    def getMissingFields(cls):
+        '''
+        Arguments:
+            cls: classobj
+                A back-end API data class
+        Returns: list(str)
+            A list of field names that are not supported/used by this back-end
+        '''
+        return []
 
 
     def initNodeInfo(self):
@@ -219,7 +230,7 @@ class Backend(Backend_Base):
             lockedIn = 0 #TODO
             lockedOut = 0 #TODO
             theirs = total - ours - lockedIn - lockedOut
-            ret.append(Channel(
+            ret.append(Backend.Channel(
                 channelID = Backend.ChannelID(
                     peerID = c['peer_id']
                     ),
@@ -270,7 +281,7 @@ class Backend(Backend_Base):
                     lockedOut = 0 #TODO
                     theirs = total - ours - lockedIn - lockedOut
 
-                    channels.append(Channel(
+                    channels.append(Backend.Channel(
                         channelID=Backend.ChannelID(peerID=p['id']),
                         state=state,
                         operational=operational,
@@ -281,7 +292,7 @@ class Backend(Backend_Base):
                         ))
             alias = p['alias'] if 'alias' in p else '(unknown)'
             color = p['color'] if 'color' in p else 'ffffff'
-            ret.append(Peer(
+            ret.append(Backend.Peer(
                 peerID=p['id'],
                 alias=alias,
                 color=color,
@@ -307,13 +318,13 @@ class Backend(Backend_Base):
             try:
                 data = self.decodeInvoiceData(inv['bolt11'])
             except Backend.CommandFailed:
-                data = InvoiceData(
+                data = Backend.InvoiceData(
                     expirationTime = inv['expires_at'],
                     amount = inv['msatoshi'],
                     currency = self.getNativeCurrency()
                     )
 
-            ret.append(Invoice(
+            ret.append(Backend.Invoice(
                 label=inv['label'],
                 status=inv['status'],
                 bolt11=inv['bolt11'],
@@ -335,7 +346,7 @@ class Backend(Backend_Base):
         currency = self.getNativeCurrency()
         return \
         [
-        Payment(
+        Backend.Payment(
             label=str(x['id']),
             timestamp=x['timestamp'],
             amount=x['msatoshi'],
@@ -396,7 +407,7 @@ class Backend(Backend_Base):
 		#TODO: support for bolt11 data that doesn't contain all fields
         creationTime = result['created_at']
         expirationTime = creationTime + result['expiry']
-        return InvoiceData(
+        return Backend.InvoiceData(
             creationTime=creationTime,
             expirationTime=expirationTime,
             min_final_cltv_expiry=result['min_final_cltv_expiry'],

@@ -29,7 +29,6 @@ from utils.struct import Struct
 from .lnd import rpc_pb2 as ln
 from .lnd import rpc_pb2_grpc as lnrpc
 
-from .backend_base import Invoice, InvoiceData, Payment, Channel, Peer
 from .backend_base import Backend as Backend_Base
 
 
@@ -109,6 +108,21 @@ class Backend(Backend_Base):
         self.rpc = None
         self.nativeCurrency = None
         self.connectInProgress = False
+
+
+    @staticmethod
+    def getMissingFields(cls):
+        '''
+        Arguments:
+            cls: classobj
+                A back-end API data class
+        Returns: list(str)
+            A list of field names that are not supported/used by this back-end
+        '''
+        if cls == Backend.Invoice:
+            return ['label']
+
+        return []
 
 
     def tryToConnect(self):
@@ -372,7 +386,7 @@ class Backend(Backend_Base):
             for chn in cList:
                 chn = chn.channel
                 txID, index = chn.channel_point.split(':')
-                ret.append(Channel(
+                ret.append(Backend.Channel(
                     channelID      = Backend.ChannelID(
                     txID           = txID,
                     outputIndex    = int(index)
@@ -389,7 +403,7 @@ class Backend(Backend_Base):
         openChannels = openChannels.channels
         for chn in openChannels:
             txID, index = chn.channel_point.split(':')
-            ret.append(Channel(
+            ret.append(Backend.Channel(
                 channelID      = Backend.ChannelID(
                     txID           = txID,
                     outputIndex    = int(index)
@@ -427,7 +441,7 @@ class Backend(Backend_Base):
                 chn = chn.channel
                 peerID = chn.remote_node_pub
                 txID, index = chn.channel_point.split(':')
-                channel = Channel(
+                channel = Backend.Channel(
                     channelID      = Backend.ChannelID(
                         txID           = txID,
                         outputIndex    = int(index)
@@ -442,7 +456,7 @@ class Backend(Backend_Base):
                 if peerID in peerDict:
                     peerDict[peerID].channels.append(channel)
                 else:
-                    peerDict[peerID] = Peer(
+                    peerDict[peerID] = Backend.Peer(
                         peerID = peerID,
                         connected = False, #to be overwritten later if True
                         channels = [channel]
@@ -455,7 +469,7 @@ class Backend(Backend_Base):
         for chn in openChannels:
             peerID = chn.remote_pubkey
             txID, index = chn.channel_point.split(':')
-            channel = Channel(
+            channel = Backend.Channel(
                 channelID      = Backend.ChannelID(
                     txID           = txID,
                     outputIndex    = int(index)
@@ -470,7 +484,7 @@ class Backend(Backend_Base):
             if peerID in peerDict:
                 peerDict[peerID].channels.append(channel)
             else:
-                peerDict[peerID] = Peer(
+                peerDict[peerID] = Backend.Peer(
                     peerID = peerID,
                     connected = False, #to be overwritten later if True
                     channels = [channel]
@@ -484,7 +498,7 @@ class Backend(Backend_Base):
                 peerDict[peerID].connected = True
             else:
                 #Connected peers that don't have any channels
-                peerDict[peerID] = Peer(
+                peerDict[peerID] = Backend.Peer(
                     peerID = peerID,
                     connected = True,
                     channels = []
@@ -526,7 +540,7 @@ class Backend(Backend_Base):
             try:
                 data = self.decodeInvoiceData(inv.payment_request)
             except Backend.CommandFailed:
-                data = InvoiceData(
+                data = Backend.InvoiceData(
                     creationTime = inv.creation_date,
                     expirationTime = expirationTime,
                     min_final_cltv_expiry = inv.cltv_expiry,
@@ -536,7 +550,7 @@ class Backend(Backend_Base):
                     paymentHash = inv.r_hash
                     )
 
-            ret.append(Invoice(
+            ret.append(Backend.Invoice(
                 status = status,
                 bolt11 = inv.payment_request,
                 data = data
@@ -591,7 +605,7 @@ class Backend(Backend_Base):
         response = self.runCommandLowLevel('DecodePayReq',
             pay_req = bolt11
             )
-        return InvoiceData(
+        return Backend.InvoiceData(
             creationTime = response.timestamp,
             expirationTime = response.timestamp + response.expiry,
             min_final_cltv_expiry = response.cltv_expiry,
