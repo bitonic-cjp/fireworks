@@ -31,7 +31,6 @@ class NewInvoiceDialog(GenericDialog):
 
         self.label = None
         self.bolt11 = None
-        self.expirationTime = None
 
         self.setWindowTitle('Create a new invoice')
         self.setErrorMessage('Failed to create a new invoice')
@@ -48,7 +47,7 @@ class NewInvoiceDialog(GenericDialog):
 
 
     def doCommand(self):
-        self.bolt11, self.expirationTime = self.backend.makeNewInvoice(
+        self.bolt11 = self.backend.makeNewInvoice(
             label=self.labelText.text(),
             description=self.descriptionText.toPlainText(),
             amount=self.amountText.getValue(),

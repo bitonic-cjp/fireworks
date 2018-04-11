@@ -261,6 +261,7 @@ class Backend(Backend_Base):
                 {
                 'GetNodeInfo' : 'NodeInfoRequest',
                 'ListInvoices': 'ListInvoiceRequest',
+                'AddInvoice': 'Invoice',
                 }[cmd]
             except KeyError:
                 requestTypeName = cmd + 'Request'
@@ -524,7 +525,8 @@ class Backend(Backend_Base):
             ret.append(Invoice(
                 amount = 1000 * inv.value,
                 currency = self.getNativeCurrency(), #TODO
-                label = inv.memo,
+                label = None, #TODO
+                #TODO: description
                 expirationTime = expirationTime,
                 status = status
                 ))
@@ -552,14 +554,18 @@ class Backend(Backend_Base):
                 mSatoshi
             expiry: int
                 Seconds from now
-        Returns: tuple(str, int)
+        Returns: str
             The bolt11 payment code
-            The expiration time (UNIX timestamp)
         Exceptions:
             Backend.CommandFailed: the command failed (e.g. label already exists)
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+        response = self.runCommandLowLevel('AddInvoice',
+            memo = description,
+            value = amount // 1000,
+            expiry = expiry
+            )
+        return response.payment_request
 
 
     def decodeInvoiceData(self, bolt11):

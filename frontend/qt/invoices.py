@@ -210,8 +210,7 @@ class Invoices(QWidget):
         #These can be None if invoice creation failed:
         label = dialog.label
         bolt11 = dialog.bolt11
-        expirationTime = dialog.expirationTime
-        if None in (bolt11, expirationTime, label):
+        if None in (bolt11, label):
             return
 
         dialog = ShowInvoiceDialog(self, self.backend, label, bolt11)

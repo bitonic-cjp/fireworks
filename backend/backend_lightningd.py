@@ -352,9 +352,8 @@ class Backend(Backend_Base):
                 mSatoshi
             expiry: int
                 Seconds from now
-        Returns: tuple(str, int)
+        Returns: str
             The bolt11 payment code
-            The expiration time (UNIX timestamp)
         Exceptions:
             Backend.CommandFailed: the command failed (e.g. label already exists)
             Backend.NotConnected: not connected to the backend
@@ -369,7 +368,7 @@ class Backend(Backend_Base):
         except ValueError as e:
             raise Backend.CommandFailed(str(e))
 
-        return (data['bolt11'], data['expires_at'])
+        return data['bolt11']
 
 
     @translateRPCExceptions
