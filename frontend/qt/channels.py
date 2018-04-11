@@ -20,16 +20,9 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QEvent
 
 from . import updatesignal
+from .widgets import HLine
 from .newconnectiondialog import NewConnectionDialog
 from .newchanneldialog import NewChannelDialog
-
-
-
-class HLine(QFrame):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setFrameShadow(QFrame.Sunken)
-        self.setFrameShape(QFrame.HLine)
 
 
 

@@ -23,37 +23,7 @@ from PyQt5.QtCore import Qt
 
 from . import updatesignal
 from .. import formatting
-
-
-
-class HLine(QFrame):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setFrameShadow(QFrame.Sunken)
-        self.setFrameShape(QFrame.HLine)
-
-
-
-class BigLabel(QTextEdit):
-    def __init__(self, text, parent):
-        super().__init__(text, parent)
-
-        #make it look and feel like an ordinary label
-        self.setReadOnly(True)
-        self.setFrameStyle(QFrame.NoFrame)
-        #pal = self.palette()
-        #pal.setColor(QPalette.Base, Qt.transparent)
-        #self.setPalette(pal)
-
-        #wrap anywhere, adjust minimum height on the fly
-        self.setLineWrapMode(QTextEdit.WidgetWidth)
-        self.setWordWrapMode(QtGui.QTextOption.WrapAnywhere)
-        self.document().documentLayout().documentSizeChanged.connect(
-            self.adjustMinimumSize)
-
-
-    def adjustMinimumSize(self, size):
-        self.setMinimumHeight(size.height() + 2 * self.frameWidth())
+from .widgets import HLine, BigLabel
 
 
 

@@ -21,14 +21,7 @@ from PyQt5.QtCore import Qt
 
 from . import updatesignal
 from .. import formatting
-
-
-
-class HLine(QFrame):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setFrameShadow(QFrame.Sunken)
-        self.setFrameShape(QFrame.HLine)
+from .widgets import HLine
 
 
 

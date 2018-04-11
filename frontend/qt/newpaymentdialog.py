@@ -19,15 +19,8 @@ from PyQt5.QtWidgets import QLabel, QPlainTextEdit, QFrame, QMessageBox, QDialog
 
 from .. import formatting
 from . import updatesignal
+from .widgets import HLine
 from .genericdialog import GenericDialog
-
-
-
-class HLine(QFrame):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setFrameShadow(QFrame.Sunken)
-        self.setFrameShape(QFrame.HLine)
 
 
 
