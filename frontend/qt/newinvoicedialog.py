@@ -31,7 +31,6 @@ class NewInvoiceDialog(GenericDialog):
 
         self.showLabel = 'label' not in self.backend.getMissingFields(self.backend.Invoice)
 
-        self.label = None
         self.bolt11 = None
 
         self.setWindowTitle('Create a new invoice')
@@ -51,11 +50,10 @@ class NewInvoiceDialog(GenericDialog):
 
 
     def doCommand(self):
-        if self.showLabel:
-            self.label = self.labelText.text()
+        label = self.labelText.text() if self.showLabel else None
 
         self.bolt11 = self.backend.makeNewInvoice(
-            label=self.label,
+            label=label,
             description=self.descriptionText.toPlainText(),
             amount=self.amountText.getValue(),
             expiry=self.expiryText.getValue()

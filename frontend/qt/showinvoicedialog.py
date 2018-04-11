@@ -26,11 +26,10 @@ from .widgets import HLine, BigLabel, QRCode
 
 
 class ShowInvoiceDialog(QDialog):
-    def __init__(self, parent, backend, label, bolt11):
+    def __init__(self, parent, backend, bolt11):
         super().__init__(parent)
         self.backend = backend
 
-        self.label  = label
         self.bolt11 = bolt11
 
         boldFont = QtGui.QFont()

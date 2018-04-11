@@ -252,13 +252,12 @@ class Invoices(QWidget):
         if(dialog.exec() != dialog.Accepted):
             return
 
-        label = dialog.label
         bolt11 = dialog.bolt11
 
         #It can be None if invoice creation failed:
         if bolt11 is None:
             return
 
-        dialog = ShowInvoiceDialog(self, self.backend, label, bolt11)
+        dialog = ShowInvoiceDialog(self, self.backend, bolt11)
         dialog.exec()
 
