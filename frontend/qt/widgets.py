@@ -79,3 +79,7 @@ class QRCode(QLabel):
         except ImportError as e:
             logging.warning('Cannot display QR codes: ' + str(e))
 
+
+    def clear(self):
+        self.setText('')
+

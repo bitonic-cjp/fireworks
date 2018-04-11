@@ -22,7 +22,7 @@ from PyQt5.QtCore import Qt, QAbstractTableModel
 
 from . import updatesignal
 from .. import formatting
-from .widgets import BigLabel
+from .widgets import BigLabel, QRCode
 from .newinvoicedialog import NewInvoiceDialog
 from .showinvoicedialog import ShowInvoiceDialog
 
@@ -141,12 +141,14 @@ class Invoices(QWidget):
         self.statusLabel = QLabel(self)
         self.descriptionLabel = QLabel(self)
         self.bolt11Label = BigLabel('', self)
+        self.QRCode = QRCode(self)
         detailLayout.addWidget(self.expirationLabel, 0, 1)
         detailLayout.addWidget(self.labelLabel, 1, 1)
         detailLayout.addWidget(self.amountLabel, 2, 1)
         detailLayout.addWidget(self.statusLabel, 3, 1)
         detailLayout.addWidget(self.descriptionLabel, 4, 1)
         detailLayout.addWidget(self.bolt11Label, 5, 1)
+        detailLayout.addWidget(self.QRCode, 6, 0, 1, 2, Qt.AlignHCenter)
 
         self.setLayout(layout)
 
@@ -166,6 +168,7 @@ class Invoices(QWidget):
             self.statusLabel.setText('')
             self.descriptionLabel.setText('')
             self.bolt11Label.setText('')
+            self.QRCode.clear()
 
         self.invoiceTable.updateInvoices(invoices)
         self.setEnabled(haveData)
@@ -182,6 +185,7 @@ class Invoices(QWidget):
             self.statusLabel.setText('')
             self.descriptionLabel.setText('')
             self.bolt11Label.setText('')
+            self.QRCode.clear()
             return
 
         row = tuple(rows)[0]
@@ -192,6 +196,8 @@ class Invoices(QWidget):
         self.statusLabel.setText(invoice.status)
         self.descriptionLabel.setText(invoice.data.description)
         self.bolt11Label.setText(invoice.bolt11)
+        #Upper case for more compact QR code:
+        self.QRCode.setQRCode('LIGHTNING:' + invoice.bolt11.upper())
 
 
     def onCreateNewInvoice(self):
