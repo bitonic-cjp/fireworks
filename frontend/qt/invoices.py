@@ -58,11 +58,11 @@ class InvoiceTable(QAbstractTableModel):
         invoice = self.dataList[index.row()]
         col = index.column()
         if col == 0:
-            return formatting.formatTimestamp(invoice.expirationTime)
+            return formatting.formatTimestamp(invoice.data.expirationTime)
         elif col == 1:
             return invoice.label
         elif col == 2:
-            return formatting.formatAmount(invoice.amount, invoice.currency)
+            return formatting.formatAmount(invoice.data.amount, invoice.data.currency)
         elif col == 3:
             return invoice.status
 
@@ -77,7 +77,7 @@ class InvoiceTable(QAbstractTableModel):
         oldDataList = self.dataList
 
         newDataList = copy.deepcopy(invoices)
-        newDataList.sort(key=lambda x: x.expirationTime)
+        newDataList.sort(key=lambda x: x.data.expirationTime)
         newDataList.reverse()
 
         if newDataList != oldDataList:
@@ -177,9 +177,9 @@ class Invoices(QWidget):
 
         row = tuple(rows)[0]
         invoice = self.invoiceTable.getInvoice(row)
-        self.expirationLabel.setText(formatting.formatTimestamp(invoice.expirationTime))
+        self.expirationLabel.setText(formatting.formatTimestamp(invoice.data.expirationTime))
         self.labelLabel.setText(invoice.label)
-        self.amountLabel.setText(formatting.formatAmount(invoice.amount, invoice.currency))
+        self.amountLabel.setText(formatting.formatAmount(invoice.data.amount, invoice.data.currency))
         self.statusLabel.setText(invoice.status)
 
 

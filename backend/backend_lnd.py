@@ -262,6 +262,7 @@ class Backend(Backend_Base):
                 'GetNodeInfo' : 'NodeInfoRequest',
                 'ListInvoices': 'ListInvoiceRequest',
                 'AddInvoice': 'Invoice',
+                'DecodePayReq': 'PayReqString',
                 }[cmd]
             except KeyError:
                 requestTypeName = cmd + 'Request'
@@ -522,13 +523,23 @@ class Backend(Backend_Base):
             else:
                 status = 'pending'
 
+            try:
+                data = self.decodeInvoiceData(inv.payment_request)
+            except Backend.CommandFailed:
+                data = InvoiceData(
+                    creationTime = inv.creation_date,
+                    expirationTime = expirationTime,
+                    min_final_cltv_expiry = inv.cltv_expiry,
+                    amount = inv.value * 1000,
+                    currency = self.getNativeCurrency(),
+                    description = inv.memo,
+                    paymentHash = inv.r_hash
+                    )
+
             ret.append(Invoice(
-                amount = 1000 * inv.value,
-                currency = self.getNativeCurrency(), #TODO
-                label = None, #TODO
-                #TODO: description
-                expirationTime = expirationTime,
-                status = status
+                status = status,
+                bolt11 = inv.payment_request,
+                data = data
                 ))
 
         return ret
@@ -577,7 +588,18 @@ class Backend(Backend_Base):
             Backend.CommandFailed: the command failed (e.g. invalid bolt11 code)
             Backend.NotConnected: not connected to the backend
         '''
-        raise Backend.NotConnected()
+        response = self.runCommandLowLevel('DecodePayReq',
+            pay_req = bolt11
+            )
+        return InvoiceData(
+            creationTime = response.timestamp,
+            expirationTime = response.timestamp + response.expiry,
+            min_final_cltv_expiry = response.cltv_expiry,
+            amount = response.num_satoshis * 1000,
+            currency = self.getNativeCurrency(), #TODO: this is wrong
+            description = response.description,
+            paymentHash = response.payment_hash,
+            )
 
 
     def pay(self, bolt11):

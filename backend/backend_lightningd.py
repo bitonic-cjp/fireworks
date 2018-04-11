@@ -301,18 +301,25 @@ class Backend(Backend_Base):
             Backend.NotConnected: not connected to the backend
         '''
         invoices = self.rpc.listinvoices()['invoices']
-        currency = self.getNativeCurrency()
-        return \
-        [
-        Invoice(
-            label=x['label'],
-            expirationTime=x['expires_at'],
-            amount=x['msatoshi'],
-            currency=currency,
-            status=x['status']
-            )
-        for x in invoices
-        ]
+
+        ret = []
+        for inv in invoices:
+            try:
+                data = self.decodeInvoiceData(inv['bolt11'])
+            except Backend.CommandFailed:
+                data = InvoiceData(
+                    expirationTime = inv['expires_at'],
+                    amount = inv['msatoshi'],
+                    currency = self.getNativeCurrency()
+                    )
+
+            ret.append(Invoice(
+                label=inv['label'],
+                status=inv['status'],
+                bolt11=inv['bolt11'],
+                data=data
+                ))
+        return ret
 
 
     @translateRPCExceptions
