@@ -15,15 +15,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Fireworks. If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QGridLayout, QLabel, QFrame, QTextEdit
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 
 from . import updatesignal
 from .. import formatting
-from .widgets import HLine, BigLabel
+from .widgets import HLine, BigLabel, QRCode
 
 
 
@@ -71,28 +69,10 @@ class ShowInvoiceDialog(QDialog):
             Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
         layout.addWidget(label, 5, 1)
 
-        try:
-            from qrcode import QRCode
-            from PIL.ImageQt import ImageQt
-
-            qr = QRCode(
-                    box_size = 4,
-                    border = 4,
-                    )
-            #Upper case for more compact QR code:
-            qr.add_data('LIGHTNING:' + self.bolt11.upper())
-            qr.make()
-
-            img = qr.make_image()
-            img = ImageQt(img)
-            img = QtGui.QPixmap.fromImage(img)
-
-            label = QLabel(self)
-            label.setPixmap(img)
-            layout.addWidget(label, 6, 0, 1, 2, Qt.AlignHCenter)
-
-        except ImportError as e:
-            logging.warning('Cannot display QR codes: ' + str(e))
+        qr = QRCode(self)
+        #Upper case for more compact QR code:
+        qr.setQRCode('LIGHTNING:' + self.bolt11.upper())
+        layout.addWidget(qr, 6, 0, 1, 2, Qt.AlignHCenter)
 
         dialogButtons = QDialogButtonBox(
             QDialogButtonBox.Close)
@@ -112,6 +92,7 @@ class ShowInvoiceDialog(QDialog):
             self.statusLabel.setText('Unknown (not connected to backend)')
             return
 
+        #TODO: don't use labels for identification: LND doesn't have them.
         for invoice in invoices:
             if invoice.label == self.label:
                 self.amountLabel.setText(
