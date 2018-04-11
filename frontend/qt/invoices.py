@@ -22,6 +22,7 @@ from PyQt5.QtCore import Qt, QAbstractTableModel
 
 from . import updatesignal
 from .. import formatting
+from .widgets import BigLabel
 from .newinvoicedialog import NewInvoiceDialog
 from .showinvoicedialog import ShowInvoiceDialog
 
@@ -139,7 +140,7 @@ class Invoices(QWidget):
         self.amountLabel = QLabel(self)
         self.statusLabel = QLabel(self)
         self.descriptionLabel = QLabel(self)
-        self.bolt11Label = QLabel(self)
+        self.bolt11Label = BigLabel('', self)
         detailLayout.addWidget(self.expirationLabel, 0, 1)
         detailLayout.addWidget(self.labelLabel, 1, 1)
         detailLayout.addWidget(self.amountLabel, 2, 1)
