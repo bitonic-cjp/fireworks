@@ -54,7 +54,8 @@ class Backend(Backend_Base):
         lightningDir = self.config.getValue('lightningd', 'dir')
         lightningDir = os.path.expanduser(lightningDir)
         lightningDir = os.path.abspath(lightningDir)
-        socketFile = os.path.join(lightningDir, 'lightning-rpc')
+        lightningFile = self.config.getValue('lightningd', 'file')
+        socketFile = os.path.join(lightningDir, lightningFile)
         self.rpc = LightningRpc(socketFile)
         self.initNodeInfo()
 

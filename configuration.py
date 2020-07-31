@@ -50,7 +50,8 @@ class Configuration:
             },
         'lightningd':
             {
-            'dir': '~/.lightning'
+            'dir': '~/.lightning',
+            'file': 'lightning-rpc',
             },
         'lnd':
             {
