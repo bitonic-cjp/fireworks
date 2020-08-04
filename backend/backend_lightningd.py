@@ -183,9 +183,16 @@ class Backend(Backend_Base):
                     )
 
         if not ret:
+            for b in self.nodeInfo['binding']:
+                ret.append(
+                    '%s@%s:%s' % \
+                    (node_id, b['address'], b['port'])
+                    )
+
+        if not ret:
             ret = [
                 '%s@%s:%s' % \
-                (node_id, '(unknown hostname)', self.nodeInfo['port'])
+                (node_id, '(unknown hostname)', '(unknown port)')
                 ]
 
         return ret
