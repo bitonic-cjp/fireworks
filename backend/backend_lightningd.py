@@ -350,13 +350,18 @@ class Backend(Backend_Base):
         Exceptions:
             Backend.NotConnected: not connected to the backend
         '''
-        payments = self.rpc.listpayments()['payments']
+        payments = self.rpc.listsendpays()['payments']
         currency = self.getNativeCurrency()
+
+        for p in payments:
+        	data = self.decodeInvoiceData(p['bolt11'])
+        	p['destination'] = data.payee
+
         return \
         [
         Backend.Payment(
             label=str(x['id']),
-            timestamp=x['timestamp'],
+            timestamp=x['created_at'],
             amount=x['msatoshi'],
             currency=currency,
             status=x['status'],
